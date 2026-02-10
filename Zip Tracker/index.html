@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crematory Service Area Analyzer</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <h1><i class="fas fa-map-marked-alt"></i> Crematory Service Area Analyzer</h1>
+            <div class="header-controls">
+                <button id="uploadBtn" class="btn btn-primary">
+                    <i class="fas fa-upload"></i> Upload Excel File
+                </button>
+                <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;" />
+                <button id="addZipsBtn" class="btn btn-success">
+                    <i class="fas fa-plus-circle"></i> Add Service Zips
+                </button>
+                <input type="file" id="addZipsInput" accept=".csv" style="display: none;" />
+                <button id="exportBtn" class="btn btn-secondary" disabled>
+                    <i class="fas fa-download"></i> Export CSV
+                </button>
+            </div>
+        </header>
+
+        <div class="main-container">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <!-- Search Section -->
+                <div class="panel search-panel">
+                    <h3><i class="fas fa-search"></i> Search</h3>
+                    <input type="text" id="searchInput" placeholder="Search by zip code or city..." />
+                    <div id="searchResults" class="search-results"></div>
+                </div>
+
+                <!-- Statistics Panel -->
+                <div class="panel stats-panel">
+                    <h3><i class="fas fa-chart-bar"></i> Service Area Statistics</h3>
+                    <div id="statsContent" class="stats-content">
+                        <p class="no-data">Upload Excel file to view statistics</p>
+                    </div>
+                </div>
+
+                <!-- Crematories Panel -->
+                <div class="panel crematories-panel">
+                    <h3><i class="fas fa-building"></i> Crematories</h3>
+                    <div id="crematoriesContent" class="crematories-content">
+                        <p class="no-data">Upload Excel file to view crematories</p>
+                    </div>
+                </div>
+
+                <!-- Map Controls -->
+                <div class="panel controls-panel">
+                    <h3><i class="fas fa-sliders-h"></i> Map Controls</h3>
+                    <label class="toggle-control">
+                        <input type="checkbox" id="countyToggle" checked />
+                        <span>Show County Boundaries</span>
+                    </label>
+                    <label class="toggle-control">
+                        <input type="checkbox" id="serviceAreaToggle" checked />
+                        <span>Show Service Areas Only</span>
+                    </label>
+                </div>
+
+                <!-- Legend -->
+                <div class="panel legend-panel">
+                    <h3><i class="fas fa-palette"></i> Legend</h3>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #4CAF50;"></span>
+                            <span>In Service Area</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #64B5F6;"></span>
+                            <span>Tier 1</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #FFF176;"></span>
+                            <span>Tier 2</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #FF9800;"></span>
+                            <span>Tier 3</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #E57373;"></span>
+                            <span>Outside 100 Miles</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color legend-border" style="border: 3px solid #FFC107;"></span>
+                            <span>Has Crematory</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Map Container -->
+            <main class="map-container">
+                <div id="map"></div>
+                <div id="loadingOverlay" class="loading-overlay">
+                    <div class="spinner"></div>
+                    <p>Loading zip code boundaries...</p>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- SheetJS for Excel parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- Main Application -->
+    <script src="app.js"></script>
+
+    <!-- Embedded Service Area Data (auto-loads on page load) -->
+    <script src="embedded-data.js"></script>
+</body>
+</html>

@@ -1,0 +1,731 @@
+/* CSS Variables */
+:root {
+    --primary-color: #2196F3;
+    --primary-dark: #1976D2;
+    --secondary-color: #607D8B;
+    --success-color: #4CAF50;
+    --warning-color: #FFC107;
+    --gray-color: #9E9E9E;
+    --dark-color: #263238;
+    --light-color: #ECEFF1;
+    --white: #FFFFFF;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    --border-radius: 8px;
+    --sidebar-width: 350px;
+}
+
+/* Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: var(--light-color);
+    color: var(--dark-color);
+    line-height: 1.5;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Header */
+.header {
+    background: linear-gradient(135deg, var(--dark-color), #37474F);
+    color: var(--white);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+    z-index: 1000;
+}
+
+.header h1 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header h1 i {
+    color: var(--primary-color);
+}
+
+.header-controls {
+    display: flex;
+    gap: 12px;
+}
+
+/* Buttons */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--primary-dark);
+}
+
+.btn-secondary {
+    background: var(--secondary-color);
+    color: var(--white);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: #546E7A;
+}
+
+.btn-success {
+    background: var(--success-color);
+    color: var(--white);
+}
+
+.btn-success:hover:not(:disabled) {
+    background: #43A047;
+}
+
+/* Main Container */
+.main-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--white);
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: #ddd;
+}
+
+.panel {
+    background: var(--white);
+    padding: 16px;
+}
+
+.panel h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.panel h3 i {
+    color: var(--primary-color);
+    width: 20px;
+}
+
+/* Search Panel */
+.search-panel input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
+}
+
+.search-panel input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.search-results {
+    margin-top: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.search-result-item {
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid #eee;
+}
+
+.search-result-item:hover {
+    background: var(--light-color);
+}
+
+.search-result-item .zip {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.search-result-item .city {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* Statistics Panel */
+.stats-content {
+    font-size: 0.9rem;
+}
+
+.no-data {
+    color: #999;
+    font-style: italic;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    color: #666;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.stat-section {
+    margin-top: 16px;
+}
+
+.stat-section h4 {
+    font-size: 0.85rem;
+    color: var(--secondary-color);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.county-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 0.85rem;
+}
+
+/* Crematories Panel */
+.crematories-content {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.crematory-item {
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: var(--light-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+}
+
+.crematory-item:hover {
+    background: #E3F2FD;
+    border-left-color: var(--primary-color);
+}
+
+.crematory-item.active {
+    background: #BBDEFB;
+    border-left-color: var(--primary-color);
+}
+
+.crematory-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+.crematory-address {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.crematory-zips {
+    font-size: 0.8rem;
+    color: var(--primary-color);
+}
+
+/* Controls Panel */
+.toggle-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.toggle-control input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Legend Panel */
+.legend-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+}
+
+.legend-color {
+    width: 24px;
+    height: 18px;
+    border-radius: 3px;
+}
+
+.legend-border {
+    background: transparent;
+    border: 3px solid var(--warning-color);
+}
+
+/* Map Container */
+.map-container {
+    flex: 1;
+    position: relative;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.loading-overlay.hidden {
+    display: none;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--light-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-overlay p {
+    margin-top: 16px;
+    color: var(--secondary-color);
+    font-size: 0.95rem;
+}
+
+/* Custom Popup Styles */
+.leaflet-popup-content-wrapper {
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+.leaflet-popup-content {
+    margin: 12px 16px;
+    font-size: 0.9rem;
+}
+
+.popup-header {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.popup-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+}
+
+.popup-label {
+    color: #666;
+}
+
+.popup-value {
+    font-weight: 500;
+}
+
+.popup-section {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+}
+
+.popup-section h4 {
+    font-size: 0.85rem;
+    color: var(--secondary-color);
+    margin-bottom: 8px;
+}
+
+.crematory-distance {
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.crematory-distance:last-child {
+    border-bottom: none;
+}
+
+.crematory-distance .name {
+    font-weight: 500;
+}
+
+.crematory-distance .details {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 2px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-top: 8px;
+}
+
+.status-badge.in-service {
+    background: #E8F5E9;
+    color: #2E7D32;
+}
+
+.status-badge.out-service {
+    background: #EEEEEE;
+    color: #616161;
+}
+
+/* Crematory Marker */
+.crematory-marker {
+    background: var(--warning-color);
+    border: 3px solid var(--dark-color);
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .main-container {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        max-height: 40vh;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .panel {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .header h1 {
+        font-size: 1.2rem;
+    }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+}
+
+/* Highlight animation for found zip */
+@keyframes highlight-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.zip-highlight {
+    animation: highlight-pulse 0.5s ease-in-out 3;
+}
+
+/* County tooltip */
+.county-tooltip {
+    background: rgba(25, 118, 210, 0.9);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.county-tooltip::before {
+    border-top-color: rgba(25, 118, 210, 0.9);
+}
+
+/* Viewport Statistics Styles */
+.viewport-stat-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.viewport-stat {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 6px;
+    background: #f8f9fa;
+}
+
+.viewport-stat.service {
+    background: rgba(76, 175, 80, 0.1);
+    border-left: 3px solid #4CAF50;
+}
+
+.viewport-stat.nearby {
+    background: rgba(255, 241, 118, 0.2);
+    border-left: 3px solid #FBC02D;
+}
+
+.viewport-stat.extended {
+    background: rgba(255, 152, 0, 0.1);
+    border-left: 3px solid #FF9800;
+}
+
+.viewport-stat.outside {
+    background: rgba(229, 115, 115, 0.1);
+    border-left: 3px solid #E57373;
+}
+
+.viewport-stat .stat-icon {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.viewport-stat .stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.viewport-stat .stat-label {
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #333;
+}
+
+.viewport-stat .stat-value {
+    font-size: 0.85rem;
+    color: #555;
+}
+
+.viewport-stat .stat-pop {
+    font-size: 0.75rem;
+    color: #777;
+}
+
+.viewport-total {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #ddd;
+    font-size: 0.8rem;
+    color: #555;
+    text-align: center;
+}
+
+#viewportStatsSection h4 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Bucket Download Button */
+.bucket-download-btn {
+    background: transparent;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    color: #666;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    align-self: center;
+}
+
+.bucket-download-btn:hover:not(:disabled) {
+    background: #f0f0f0;
+    border-color: #bbb;
+    color: #333;
+}
+
+.bucket-download-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.viewport-stat.service .bucket-download-btn:hover:not(:disabled) {
+    background: rgba(76, 175, 80, 0.15);
+    border-color: #4CAF50;
+    color: #4CAF50;
+}
+
+.viewport-stat.nearby .bucket-download-btn:hover:not(:disabled) {
+    background: rgba(251, 192, 45, 0.15);
+    border-color: #FBC02D;
+    color: #F57F17;
+}
+
+.viewport-stat.extended .bucket-download-btn:hover:not(:disabled) {
+    background: rgba(255, 152, 0, 0.15);
+    border-color: #FF9800;
+    color: #E65100;
+}
+
+.viewport-stat.outside .bucket-download-btn:hover:not(:disabled) {
+    background: rgba(229, 115, 115, 0.15);
+    border-color: #E57373;
+    color: #C62828;
+}
+
+/* Landmarks Section in Popup */
+.landmarks-section {
+    background: linear-gradient(135deg, #E3F2FD, #F3E5F5);
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+    border-left: 3px solid #7C4DFF;
+}
+
+.landmarks-section h4 {
+    margin: 0 0 8px 0;
+    font-size: 0.85rem;
+    color: #5E35B1;
+}
+
+.landmarks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.landmark-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    padding: 4px 0;
+}
+
+.landmark-icon {
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+}
+
+.landmark-name {
+    flex: 1;
+    font-weight: 500;
+    color: #333;
+}
+
+.landmark-distance {
+    font-size: 0.7rem;
+    color: #666;
+    background: rgba(255,255,255,0.7);
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+.landmarks-hint {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px dashed #B39DDB;
+    font-size: 0.75rem;
+    color: #7C4DFF;
+    font-style: italic;
+}
