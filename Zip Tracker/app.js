@@ -158,7 +158,8 @@ const state = {
     crematoryZips: new Set(),
     zipToCityCounty: new Map(), // zip -> { city, county }
     selectedCrematory: null,
-    isDataLoaded: false
+    isDataLoaded: false,
+    userLocationMarker: null
 };
 
 // ============================================================================
@@ -185,11 +186,150 @@ function initializeMap() {
         maxZoom: 18
     }).addTo(state.map);
 
-    // Alternative: CartoDB Positron (lighter, cleaner look)
-    // L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    //     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    //     maxZoom: 18
-    // }).addTo(state.map);
+    // Add "Near Me" geolocation control
+    addNearMeControl();
+}
+
+// ============================================================================
+// Near Me / Geolocation
+// ============================================================================
+
+function addNearMeControl() {
+    const NearMeControl = L.Control.extend({
+        options: { position: 'topright' },
+        onAdd: function() {
+            const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control near-me-control');
+            const btn = L.DomUtil.create('a', 'near-me-btn', container);
+            btn.href = '#';
+            btn.title = 'Find my location';
+            btn.innerHTML = '<i class="fas fa-crosshairs"></i> Near Me';
+            btn.setAttribute('role', 'button');
+
+            L.DomEvent.disableClickPropagation(container);
+            L.DomEvent.on(btn, 'click', function(e) {
+                L.DomEvent.preventDefault(e);
+                findMyLocation();
+            });
+
+            return container;
+        }
+    });
+
+    new NearMeControl().addTo(state.map);
+}
+
+function findMyLocation() {
+    if (!navigator.geolocation) {
+        alert('Geolocation is not supported by your browser.');
+        return;
+    }
+
+    // Update button to show loading state
+    const btn = document.querySelector('.near-me-btn');
+    if (btn) {
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Locating...';
+        btn.style.pointerEvents = 'none';
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+
+            // Reset button
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-crosshairs"></i> Near Me';
+                btn.style.pointerEvents = '';
+            }
+
+            // Remove previous location marker if any
+            if (state.userLocationMarker) {
+                state.map.removeLayer(state.userLocationMarker);
+            }
+
+            // Add a marker at user's location
+            const userIcon = L.divIcon({
+                className: 'user-location-icon',
+                html: '<div class="user-location-pulse"></div><div class="user-location-dot"></div>',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            });
+
+            state.userLocationMarker = L.marker([userLat, userLng], { icon: userIcon })
+                .addTo(state.map)
+                .bindPopup('<strong>Your Location</strong>')
+                .openPopup();
+
+            // Find the nearest zip code to the user's location
+            let nearestZip = null;
+            let nearestDistance = Infinity;
+            let nearestLayer = null;
+
+            if (state.zipCodeLayer) {
+                state.zipCodeLayer.eachLayer(layer => {
+                    const zip = layer.feature.properties.ZCTA5CE10 ||
+                               layer.feature.properties.zip ||
+                               layer.feature.properties.GEOID10;
+                    if (!zip) return;
+
+                    const center = layer.getBounds().getCenter();
+                    const dist = calculateHaversineDistance(userLat, userLng, center.lat, center.lng);
+
+                    if (dist < nearestDistance) {
+                        nearestDistance = dist;
+                        nearestZip = zip;
+                        nearestLayer = layer;
+                    }
+                });
+            }
+
+            // Zoom to show the user's area
+            state.map.setView([userLat, userLng], 12);
+
+            // Highlight the nearest zip and show its popup
+            if (nearestZip && nearestLayer) {
+                setTimeout(() => {
+                    nearestLayer.setStyle({
+                        weight: 4,
+                        color: CONFIG.colors.highlight,
+                        fillOpacity: 0.8
+                    });
+
+                    const centroid = nearestLayer.getBounds().getCenter();
+                    showZipPopup({ latlng: centroid }, nearestZip);
+
+                    // Reset highlight after a few seconds
+                    setTimeout(() => {
+                        if (state.zipCodeLayer) {
+                            state.zipCodeLayer.resetStyle(nearestLayer);
+                        }
+                    }, 5000);
+                }, 300);
+            }
+        },
+        (error) => {
+            // Reset button
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-crosshairs"></i> Near Me';
+                btn.style.pointerEvents = '';
+            }
+
+            let message = 'Unable to retrieve your location.';
+            if (error.code === error.PERMISSION_DENIED) {
+                message = 'Location access was denied. Please enable location permissions in your browser settings.';
+            } else if (error.code === error.POSITION_UNAVAILABLE) {
+                message = 'Location information is unavailable.';
+            } else if (error.code === error.TIMEOUT) {
+                message = 'Location request timed out. Please try again.';
+            }
+            alert(message);
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 300000
+        }
+    );
 }
 
 function setupEventListeners() {
@@ -408,7 +548,7 @@ async function loadZipCodeBoundaries() {
         await loadCountyBoundaries();
 
         hideLoading();
-        console.log(`Loaded ${state.zipCodeData.size} zip codes (CA: ${socalZips.features.length}, TX: ${dfwZips.features.length}, AZ: ${phoenixZips.features.length}, WA: ${seattleZips.features.length})`);
+        console.log(`Loaded ${state.zipCodeData.size} zip codes (CA: ${socalZips.features.length}, TX: ${dfwZips.features.length}, AZ: ${arizonaZips.features.length}, WA: ${seattleZips.features.length})`);
 
     } catch (error) {
         console.error('Error loading zip code boundaries:', error);
@@ -690,6 +830,22 @@ function createPopupContent(zip, hasRealDistances = false) {
             countyDisplay = 'San Bernardino';
         } else if (['930', '931', '932', '933', '934', '935'].includes(zipPrefix)) {
             countyDisplay = 'Ventura / Santa Barbara / Kern';
+        }
+        // Arizona prefixes
+        else if (['850', '851', '852', '853'].includes(zipPrefix)) {
+            countyDisplay = 'Maricopa';
+        } else if (['857'].includes(zipPrefix)) {
+            countyDisplay = 'Pima';
+        } else if (['855', '856'].includes(zipPrefix)) {
+            countyDisplay = 'Cochise';
+        } else if (['863'].includes(zipPrefix)) {
+            countyDisplay = 'Yavapai';
+        } else if (['854'].includes(zipPrefix)) {
+            countyDisplay = 'Pinal';
+        } else if (['859'].includes(zipPrefix)) {
+            countyDisplay = 'Coconino';
+        } else if (['858'].includes(zipPrefix)) {
+            countyDisplay = 'Yuma';
         }
     }
 

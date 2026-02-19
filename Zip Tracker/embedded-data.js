@@ -245,6 +245,28 @@ const LANDMARKS = [
     { name: "Talking Stick Resort", lat: 33.5287, lng: -111.8841, type: "casino" },
     { name: "Casino Arizona", lat: 33.5360, lng: -111.8752, type: "casino" },
 
+    // Tucson Metro Area (Arizona)
+    { name: "University of Arizona", lat: 32.2319, lng: -110.9501, type: "university" },
+    { name: "Tucson International Airport", lat: 32.1161, lng: -110.9410, type: "airport" },
+    { name: "Saguaro National Park East", lat: 32.1797, lng: -110.7379, type: "park" },
+    { name: "Saguaro National Park West", lat: 32.2477, lng: -111.1868, type: "park" },
+    { name: "Tucson Mall", lat: 32.2833, lng: -110.9817, type: "shopping" },
+    { name: "Park Place Mall", lat: 32.2156, lng: -110.8756, type: "shopping" },
+    { name: "La Encantada", lat: 32.3097, lng: -110.8878, type: "shopping" },
+    { name: "Arizona-Sonora Desert Museum", lat: 32.2451, lng: -111.1668, type: "museum" },
+    { name: "Pima Air & Space Museum", lat: 32.1420, lng: -110.8630, type: "museum" },
+    { name: "Reid Park Zoo", lat: 32.2103, lng: -110.9249, type: "attraction" },
+    { name: "Mount Lemmon", lat: 32.4430, lng: -110.7888, type: "landmark" },
+    { name: "Casino del Sol", lat: 32.1600, lng: -111.1050, type: "casino" },
+    { name: "Desert Diamond Casino Tucson", lat: 32.1083, lng: -111.0039, type: "casino" },
+    { name: "Kino Sports Complex", lat: 32.1755, lng: -110.9648, type: "sports" },
+    { name: "Tucson Convention Center", lat: 32.2115, lng: -110.9754, type: "venue" },
+    { name: "4th Avenue District", lat: 32.2276, lng: -110.9682, type: "district" },
+    { name: "Downtown Tucson", lat: 32.2217, lng: -110.9747, type: "district" },
+    { name: "Tubac Presidio State Park", lat: 31.6126, lng: -111.0463, type: "park" },
+    { name: "Biosphere 2", lat: 32.5789, lng: -110.8508, type: "attraction" },
+    { name: "Colossal Cave Mountain Park", lat: 32.0644, lng: -110.6354, type: "park" },
+
     // Seattle Metro Area (Washington)
     { name: "T-Mobile Park", lat: 47.5914, lng: -122.3325, type: "sports" },
     { name: "Lumen Field", lat: 47.5952, lng: -122.3316, type: "sports" },
@@ -3210,6 +3232,18 @@ function populateZipCityCountyData() {
                 // Arizona prefixes
                 else if (['850', '851', '852', '853'].includes(prefix)) {
                     county = 'Maricopa';
+                } else if (['857'].includes(prefix)) {
+                    county = 'Pima';
+                } else if (['855', '856'].includes(prefix)) {
+                    county = 'Cochise';
+                } else if (['863'].includes(prefix)) {
+                    county = 'Yavapai';
+                } else if (['854'].includes(prefix)) {
+                    county = 'Pinal';
+                } else if (['859'].includes(prefix)) {
+                    county = 'Coconino';
+                } else if (['858'].includes(prefix)) {
+                    county = 'Yuma';
                 }
                 // Washington prefixes
                 else if (['980', '981'].includes(prefix)) {
