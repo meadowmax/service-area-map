@@ -87,9 +87,21 @@ const CONFIG = {
         'Brazos'
     ],
 
-    // Phoenix Metro Area counties (Arizona)
+    // Arizona counties (Phoenix + Tucson coverage area)
     arizonaCounties: [
-        'Maricopa'
+        'Maricopa',
+        'Pima',
+        'Pinal',
+        'Yavapai',
+        'Gila',
+        'Cochise',
+        'Santa Cruz',
+        'Graham',
+        'Greenlee',
+        'La Paz',
+        'Coconino',
+        'Navajo',
+        'Yuma'
     ],
 
     // Seattle Metro Area counties (Washington)
@@ -359,13 +371,13 @@ async function loadZipCodeBoundaries() {
         // Filter zip codes for each region
         const socalZips = filterSoCalZips(caGeojson);
         const dfwZips = filterDFWZips(txGeojson);
-        const phoenixZips = filterPhoenixZips(azGeojson);
+        const arizonaZips = filterArizonaZips(azGeojson);
         const seattleZips = filterSeattleZips(waGeojson);
 
         // Combine all regions
         const combinedZips = {
             type: 'FeatureCollection',
-            features: [...socalZips.features, ...dfwZips.features, ...phoenixZips.features, ...seattleZips.features]
+            features: [...socalZips.features, ...dfwZips.features, ...arizonaZips.features, ...seattleZips.features]
         };
 
         // Create the zip code layer
@@ -457,13 +469,15 @@ function filterDFWZips(geojson) {
     };
 }
 
-function filterPhoenixZips(geojson) {
-    // Phoenix Metro Area bounding box
+function filterArizonaZips(geojson) {
+    // Arizona bounding box - covers Phoenix + Tucson + 100mi expansion zones
+    // Spans from Prescott/Sedona (north) to Nogales/Douglas (south),
+    // Quartzsite (west) to Safford/Willcox (east)
     const bounds = {
-        minLat: 33.0,
-        maxLat: 33.9,
-        minLng: -112.6,
-        maxLng: -111.5
+        minLat: 31.2,
+        maxLat: 35.2,
+        minLng: -114.0,
+        maxLng: -109.0
     };
 
     const filteredFeatures = geojson.features.filter(feature => {
@@ -1782,21 +1796,30 @@ function calculateNearbyZips() {
     state.extendedZips.clear();
     state.tierZips.clear();
 
-    // Load SoCal tier data from SOCAL_TIER_DATA (defined in embedded-data.js)
-    if (typeof SOCAL_TIER_DATA !== 'undefined') {
-        Object.entries(SOCAL_TIER_DATA).forEach(([zip, tier]) => {
-            state.tierZips.set(zip, tier);
-            // Also populate legacy sets for backwards compatibility
-            if (tier === 1) {
-                state.nearbyZips.add(zip);
-            } else if (tier === 2 || tier === 3) {
-                state.extendedZips.add(zip);
-            }
-        });
-        console.log(`Loaded ${state.tierZips.size} SoCal tier zips (T1: ${Object.values(SOCAL_TIER_DATA).filter(t => t === 1).length}, T2: ${Object.values(SOCAL_TIER_DATA).filter(t => t === 2).length}, T3: ${Object.values(SOCAL_TIER_DATA).filter(t => t === 3).length})`);
-    }
+    // Load tier data from all regions (defined in embedded-data.js)
+    const tierSources = [
+        { name: 'SoCal', data: typeof SOCAL_TIER_DATA !== 'undefined' ? SOCAL_TIER_DATA : null },
+        { name: 'AZ', data: typeof AZ_TIER_DATA !== 'undefined' ? AZ_TIER_DATA : null }
+    ];
 
-    console.log(`Found ${state.nearbyZips.size} nearby zips, ${state.extendedZips.size} extended zips`);
+    tierSources.forEach(({ name, data }) => {
+        if (data) {
+            Object.entries(data).forEach(([zip, tier]) => {
+                state.tierZips.set(zip, tier);
+                if (tier === 1) {
+                    state.nearbyZips.add(zip);
+                } else if (tier === 2 || tier === 3) {
+                    state.extendedZips.add(zip);
+                }
+            });
+            const t1 = Object.values(data).filter(t => t === 1).length;
+            const t2 = Object.values(data).filter(t => t === 2).length;
+            const t3 = Object.values(data).filter(t => t === 3).length;
+            console.log(`Loaded ${name} tier zips (T1: ${t1}, T2: ${t2}, T3: ${t3})`);
+        }
+    });
+
+    console.log(`Total tier zips: ${state.tierZips.size}, nearby: ${state.nearbyZips.size}, extended: ${state.extendedZips.size}`);
 }
 
 function highlightCrematoryZips(crematory) {
