@@ -101,7 +101,9 @@ const CONFIG = {
         'La Paz',
         'Coconino',
         'Navajo',
-        'Yuma'
+        'Yuma',
+        'Mohave',
+        'Apache'
     ],
 
     // Seattle Metro Area counties (Washington)
@@ -364,17 +366,15 @@ function setupEventListeners() {
 
 async function loadCountyBoundaries() {
     try {
-        // Fetch all state county boundaries in parallel (some may not exist)
-        const [caResponse, txResponse, azResponse, waResponse] = await Promise.all([
+        // Fetch CA from codeforamerica (known working), and all US counties from Plotly for TX/AZ/WA
+        const [caResponse, usResponse] = await Promise.all([
             fetch('https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/california-counties.geojson').catch(() => null),
-            fetch('https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/texas-counties.geojson').catch(() => null),
-            fetch('https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/arizona-counties.geojson').catch(() => null),
-            fetch('https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/washington-counties.geojson').catch(() => null)
+            fetch('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json').catch(() => null)
         ]);
 
         let allCountyFeatures = [];
 
-        // Process California counties
+        // Process California counties (dedicated source)
         if (caResponse && caResponse.ok) {
             const caGeojson = await caResponse.json();
 
@@ -394,49 +394,36 @@ async function loadCountyBoundaries() {
             allCountyFeatures.push(...caFiltered);
         }
 
-        // Process Texas counties
-        if (txResponse && txResponse.ok) {
-            const txGeojson = await txResponse.json();
+        // Process TX, AZ, WA from US counties dataset (filter by state FIPS code)
+        if (usResponse && usResponse.ok) {
+            const usGeojson = await usResponse.json();
 
-            const dfwCountyNames = CONFIG.texasCounties;
+            // State FIPS codes: TX=48, AZ=04, WA=53
+            const stateFilters = {
+                '48': CONFIG.texasCounties,       // Texas
+                '04': CONFIG.arizonaCounties,      // Arizona
+                '53': CONFIG.washingtonCounties     // Washington
+            };
 
-            const txFiltered = txGeojson.features.filter(feature => {
-                const name = feature.properties.name || feature.properties.NAME;
-                return dfwCountyNames.some(county =>
-                    name && name.toLowerCase().includes(county.toLowerCase())
+            const filtered = usGeojson.features.filter(feature => {
+                const stateFips = feature.properties.STATE;
+                if (!stateFilters[stateFips]) return false;
+
+                const name = feature.properties.NAME;
+                const allowedCounties = stateFilters[stateFips];
+                return allowedCounties.some(county =>
+                    name && name.toLowerCase() === county.toLowerCase()
                 );
             });
-            allCountyFeatures.push(...txFiltered);
-        }
 
-        // Process Arizona counties
-        if (azResponse && azResponse.ok) {
-            const azGeojson = await azResponse.json();
-
-            const azCountyNames = CONFIG.arizonaCounties;
-
-            const azFiltered = azGeojson.features.filter(feature => {
-                const name = feature.properties.name || feature.properties.NAME;
-                return azCountyNames.some(county =>
-                    name && name.toLowerCase().includes(county.toLowerCase())
-                );
+            // Normalize the name property so downstream code works consistently
+            filtered.forEach(feature => {
+                if (!feature.properties.name && feature.properties.NAME) {
+                    feature.properties.name = feature.properties.NAME;
+                }
             });
-            allCountyFeatures.push(...azFiltered);
-        }
 
-        // Process Washington counties
-        if (waResponse && waResponse.ok) {
-            const waGeojson = await waResponse.json();
-
-            const waCountyNames = CONFIG.washingtonCounties;
-
-            const waFiltered = waGeojson.features.filter(feature => {
-                const name = feature.properties.name || feature.properties.NAME;
-                return waCountyNames.some(county =>
-                    name && name.toLowerCase().includes(county.toLowerCase())
-                );
-            });
-            allCountyFeatures.push(...waFiltered);
+            allCountyFeatures.push(...filtered);
         }
 
         if (allCountyFeatures.length === 0) {
@@ -1160,7 +1147,44 @@ function getEstimatedPopulation(zip) {
         '76132': 28000, '76133': 32000, '76134': 38000, '76137': 32000, '76148': 28000,
         '76177': 42000, '76179': 35000, '76180': 38000, '76201': 28000, '76205': 22000,
         '76207': 25000, '76208': 32000, '76209': 28000, '76210': 35000, '76226': 22000,
-        '76244': 35000, '76247': 25000, '76248': 28000, '76262': 32000
+        '76244': 35000, '76247': 25000, '76248': 28000, '76262': 32000,
+        // Phoenix Metro high-population
+        '85003': 18000, '85004': 12000, '85006': 38000, '85007': 30000, '85008': 52000,
+        '85009': 48000, '85012': 18000, '85013': 22000, '85014': 28000, '85015': 38000,
+        '85016': 35000, '85017': 42000, '85018': 32000, '85019': 28000, '85020': 35000,
+        '85021': 38000, '85022': 42000, '85023': 35000, '85024': 30000, '85027': 45000,
+        '85028': 22000, '85029': 42000, '85031': 45000, '85032': 73000, '85033': 52000,
+        '85034': 15000, '85035': 58000, '85037': 48000, '85040': 38000, '85041': 55000,
+        '85042': 42000, '85043': 38000, '85044': 45000, '85045': 18000, '85048': 35000,
+        '85050': 28000, '85051': 42000, '85053': 35000, '85054': 15000,
+        '85083': 35000, '85085': 32000, '85086': 55000,
+        '85201': 42000, '85202': 38000, '85203': 32000, '85204': 48000, '85205': 45000,
+        '85206': 55000, '85207': 48000, '85208': 52000, '85209': 38000, '85210': 28000,
+        '85212': 35000, '85213': 28000, '85215': 22000,
+        '85224': 42000, '85225': 38000, '85226': 35000, '85233': 52000, '85234': 48000,
+        '85248': 28000, '85249': 25000,
+        '85250': 18000, '85251': 28000, '85253': 15000, '85254': 45000, '85255': 28000,
+        '85256': 12000, '85257': 38000, '85258': 25000, '85259': 22000, '85260': 42000,
+        '85262': 12000, '85266': 15000, '85268': 25000,
+        '85281': 54000, '85282': 42000, '85283': 38000, '85284': 22000, '85286': 32000,
+        '85295': 42000, '85296': 48000, '85297': 55000, '85298': 35000,
+        '85301': 42000, '85302': 35000, '85303': 38000, '85304': 32000, '85305': 28000,
+        '85306': 38000, '85307': 25000, '85308': 48000, '85310': 15000,
+        '85323': 55000, '85326': 62000, '85331': 22000, '85335': 28000,
+        '85338': 58000, '85339': 42000, '85340': 18000, '85345': 45000,
+        '85351': 42000, '85353': 25000, '85355': 18000, '85363': 8000,
+        '85373': 38000, '85374': 55000, '85375': 32000, '85379': 62000,
+        '85381': 38000, '85382': 35000, '85383': 28000, '85387': 25000, '85388': 22000,
+        '85392': 42000, '85395': 48000, '85396': 55000,
+        // Tucson Metro high-population
+        '85701': 8000, '85704': 38000, '85705': 32000, '85706': 55000, '85710': 48000,
+        '85711': 28000, '85712': 32000, '85713': 38000, '85714': 12000, '85715': 22000,
+        '85716': 28000, '85718': 32000, '85719': 35000,
+        '85730': 18000, '85735': 15000, '85737': 38000, '85739': 12000,
+        '85741': 42000, '85742': 32000, '85743': 28000, '85745': 25000,
+        '85746': 42000, '85747': 35000, '85748': 18000, '85749': 22000, '85750': 25000,
+        '85755': 28000, '85756': 45000, '85757': 32000,
+        '85614': 28000, '85629': 35000, '85653': 42000, '85658': 18000
     };
 
     let population;
@@ -1229,6 +1253,48 @@ function getEstimatedPopulation(zip) {
         // Rural Texas
         else if (['754', '755', '756', '757', '758', '759'].includes(zipPrefix)) {
             population = Math.floor(3000 + rand * 12000);
+        }
+        // Arizona estimates
+        // Phoenix urban core (850xx)
+        else if (zipPrefix === '850') {
+            population = Math.floor(28000 + rand * 35000);
+        }
+        // Phoenix metro - Mesa/Chandler/Gilbert/Tempe (852xx)
+        else if (zipPrefix === '852') {
+            population = Math.floor(30000 + rand * 30000);
+        }
+        // Phoenix metro - Scottsdale/Fountain Hills (852xx handled above)
+        // Phoenix suburbs - Glendale/Peoria/Surprise (853xx)
+        else if (zipPrefix === '853') {
+            population = Math.floor(25000 + rand * 35000);
+        }
+        // Phoenix outer suburbs - Goodyear/Buckeye/Queen Creek (851xx)
+        else if (zipPrefix === '851') {
+            population = Math.floor(18000 + rand * 30000);
+        }
+        // Tucson urban (857xx)
+        else if (zipPrefix === '857') {
+            population = Math.floor(22000 + rand * 30000);
+        }
+        // Tucson suburbs/Southern AZ (856xx)
+        else if (zipPrefix === '856') {
+            population = Math.floor(8000 + rand * 22000);
+        }
+        // Rural AZ - Pinal County towns (854xx)
+        else if (zipPrefix === '854') {
+            population = Math.floor(5000 + rand * 20000);
+        }
+        // Rural AZ - Cochise/Graham/Gila/Greenlee (855xx)
+        else if (zipPrefix === '855') {
+            population = Math.floor(3000 + rand * 15000);
+        }
+        // Northern AZ - Yavapai/Prescott area (863xx)
+        else if (zipPrefix === '863') {
+            population = Math.floor(8000 + rand * 25000);
+        }
+        // Rural/remote AZ (858, 859, 860, 861, 862, 864, 865)
+        else if (['858', '859', '860', '861', '862', '864', '865'].includes(zipPrefix)) {
+            population = Math.floor(2000 + rand * 12000);
         }
         // Default estimate
         else {
