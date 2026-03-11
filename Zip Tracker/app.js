@@ -106,12 +106,30 @@ const CONFIG = {
         'Apache'
     ],
 
-    // Seattle Metro Area counties (Washington)
+    // Washington State counties (Seattle crematory 120mi radius)
     washingtonCounties: [
+        // Core metro
         'King',
         'Snohomish',
         'Pierce',
-        'Skagit'
+        'Skagit',
+        // Expanded coverage (within 120mi of Kent crematory)
+        'Kitsap',
+        'Thurston',
+        'Mason',
+        'Island',
+        'Jefferson',
+        'Clallam',
+        'Lewis',
+        'Grays Harbor',
+        'Whatcom',
+        'San Juan',
+        'Chelan',
+        'Yakima',
+        'Kittitas',
+        'Cowlitz',
+        'Skamania',
+        'Pacific'
     ],
 
     // Colors for zip code styling
@@ -623,12 +641,14 @@ function filterArizonaZips(geojson) {
 }
 
 function filterSeattleZips(geojson) {
-    // Seattle Metro Area bounding box (King, Snohomish, Pierce, Skagit counties)
+    // Washington State bounding box (120mi radius from Kent crematory)
+    // Covers from Bellingham/Whatcom (north) to Centralia/Lewis (south),
+    // Port Angeles/Clallam (west) to Wenatchee/Chelan + Yakima (east)
     const bounds = {
-        minLat: 46.8,
-        maxLat: 48.6,
-        minLng: -123.0,
-        maxLng: -121.5
+        minLat: 46.0,
+        maxLat: 49.0,
+        minLng: -124.5,
+        maxLng: -120.0
     };
 
     const filteredFeatures = geojson.features.filter(feature => {
@@ -833,6 +853,22 @@ function createPopupContent(zip, hasRealDistances = false) {
             countyDisplay = 'Coconino';
         } else if (['858'].includes(zipPrefix)) {
             countyDisplay = 'Yuma';
+        }
+        // Washington prefixes
+        else if (['980', '981'].includes(zipPrefix)) {
+            countyDisplay = 'King';
+        } else if (['982'].includes(zipPrefix)) {
+            countyDisplay = 'Snohomish';
+        } else if (['983', '984'].includes(zipPrefix)) {
+            countyDisplay = 'Pierce';
+        } else if (['985'].includes(zipPrefix)) {
+            countyDisplay = 'Thurston / Lewis';
+        } else if (['986'].includes(zipPrefix)) {
+            countyDisplay = 'Cowlitz';
+        } else if (['988'].includes(zipPrefix)) {
+            countyDisplay = 'Chelan';
+        } else if (['989'].includes(zipPrefix)) {
+            countyDisplay = 'Yakima';
         }
     }
 
@@ -1148,43 +1184,84 @@ function getEstimatedPopulation(zip) {
         '76177': 42000, '76179': 35000, '76180': 38000, '76201': 28000, '76205': 22000,
         '76207': 25000, '76208': 32000, '76209': 28000, '76210': 35000, '76226': 22000,
         '76244': 35000, '76247': 25000, '76248': 28000, '76262': 32000,
-        // Phoenix Metro high-population
-        '85003': 18000, '85004': 12000, '85006': 38000, '85007': 30000, '85008': 52000,
-        '85009': 48000, '85012': 18000, '85013': 22000, '85014': 28000, '85015': 38000,
-        '85016': 35000, '85017': 42000, '85018': 32000, '85019': 28000, '85020': 35000,
-        '85021': 38000, '85022': 42000, '85023': 35000, '85024': 30000, '85027': 45000,
-        '85028': 22000, '85029': 42000, '85031': 45000, '85032': 73000, '85033': 52000,
-        '85034': 15000, '85035': 58000, '85037': 48000, '85040': 38000, '85041': 55000,
-        '85042': 42000, '85043': 38000, '85044': 45000, '85045': 18000, '85048': 35000,
-        '85050': 28000, '85051': 42000, '85053': 35000, '85054': 15000,
-        '85083': 35000, '85085': 32000, '85086': 55000,
-        '85201': 42000, '85202': 38000, '85203': 32000, '85204': 48000, '85205': 45000,
-        '85206': 55000, '85207': 48000, '85208': 52000, '85209': 38000, '85210': 28000,
-        '85212': 35000, '85213': 28000, '85215': 22000,
-        '85224': 42000, '85225': 38000, '85226': 35000, '85233': 52000, '85234': 48000,
-        '85248': 28000, '85249': 25000,
-        '85250': 18000, '85251': 28000, '85253': 15000, '85254': 45000, '85255': 28000,
-        '85256': 12000, '85257': 38000, '85258': 25000, '85259': 22000, '85260': 42000,
-        '85262': 12000, '85266': 15000, '85268': 25000,
-        '85281': 54000, '85282': 42000, '85283': 38000, '85284': 22000, '85286': 32000,
-        '85295': 42000, '85296': 48000, '85297': 55000, '85298': 35000,
-        '85301': 42000, '85302': 35000, '85303': 38000, '85304': 32000, '85305': 28000,
-        '85306': 38000, '85307': 25000, '85308': 48000, '85310': 15000,
-        '85323': 55000, '85326': 62000, '85331': 22000, '85335': 28000,
-        '85338': 58000, '85339': 42000, '85340': 18000, '85345': 45000,
-        '85351': 42000, '85353': 25000, '85355': 18000, '85363': 8000,
-        '85373': 38000, '85374': 55000, '85375': 32000, '85379': 62000,
-        '85381': 38000, '85382': 35000, '85383': 28000, '85387': 25000, '85388': 22000,
-        '85392': 42000, '85395': 48000, '85396': 55000,
-        // Tucson Metro high-population
-        '85701': 8000, '85704': 38000, '85705': 32000, '85706': 55000, '85710': 48000,
-        '85711': 28000, '85712': 32000, '85713': 38000, '85714': 12000, '85715': 22000,
-        '85716': 28000, '85718': 32000, '85719': 35000,
-        '85730': 18000, '85735': 15000, '85737': 38000, '85739': 12000,
-        '85741': 42000, '85742': 32000, '85743': 28000, '85745': 25000,
-        '85746': 42000, '85747': 35000, '85748': 18000, '85749': 22000, '85750': 25000,
-        '85755': 28000, '85756': 45000, '85757': 32000,
-        '85614': 28000, '85629': 35000, '85653': 42000, '85658': 18000
+        // Phoenix Metro - based on Census/ACS estimates
+        '85003': 8000, '85004': 6000, '85006': 22000, '85007': 18000, '85008': 38000,
+        '85009': 35000, '85012': 10000, '85013': 15000, '85014': 20000, '85015': 25000,
+        '85016': 22000, '85017': 30000, '85018': 20000, '85019': 18000, '85020': 22000,
+        '85021': 28000, '85022': 32000, '85023': 25000, '85024': 18000, '85027': 35000,
+        '85028': 14000, '85029': 32000, '85031': 30000, '85032': 48000, '85033': 38000,
+        '85034': 8000, '85035': 42000, '85037': 35000, '85040': 25000, '85041': 40000,
+        '85042': 30000, '85043': 28000, '85044': 32000, '85045': 10000, '85048': 25000,
+        '85050': 18000, '85051': 30000, '85053': 22000, '85054': 8000,
+        '85083': 22000, '85085': 18000, '85086': 40000,
+        '85201': 28000, '85202': 25000, '85203': 22000, '85204': 38000, '85205': 32000,
+        '85206': 40000, '85207': 35000, '85208': 38000, '85209': 28000, '85210': 18000,
+        '85212': 25000, '85213': 18000, '85215': 14000,
+        '85224': 30000, '85225': 28000, '85226': 25000, '85233': 35000, '85234': 32000,
+        '85248': 18000, '85249': 15000,
+        '85250': 12000, '85251': 20000, '85253': 10000, '85254': 30000, '85255': 18000,
+        '85256': 6000, '85257': 25000, '85258': 15000, '85259': 14000, '85260': 28000,
+        '85262': 6000, '85266': 8000, '85268': 18000,
+        '85281': 22000, '85282': 28000, '85283': 25000, '85284': 14000, '85286': 20000,
+        '85295': 28000, '85296': 35000, '85297': 40000, '85298': 22000,
+        '85301': 22000, '85302': 20000, '85303': 25000, '85304': 18000, '85305': 15000,
+        '85306': 25000, '85307': 14000, '85308': 35000, '85310': 8000,
+        '85323': 38000, '85326': 15000, '85331': 14000, '85335': 18000,
+        '85338': 42000, '85339': 28000, '85340': 10000, '85345': 30000,
+        '85351': 28000, '85353': 15000, '85355': 10000, '85363': 5000,
+        '85373': 25000, '85374': 40000, '85375': 22000, '85379': 45000,
+        '85381': 25000, '85382': 22000, '85383': 18000, '85387': 15000, '85388': 14000,
+        '85392': 30000, '85395': 35000, '85396': 40000,
+        // Tucson Metro - based on Census/ACS estimates
+        '85701': 5000, '85704': 28000, '85705': 22000, '85706': 30000, '85710': 32000,
+        '85711': 18000, '85712': 22000, '85713': 25000, '85714': 8000, '85715': 14000,
+        '85716': 18000, '85718': 22000, '85719': 18000,
+        '85730': 12000, '85735': 8000, '85737': 25000, '85739': 6000,
+        '85741': 28000, '85742': 22000, '85743': 18000, '85745': 15000,
+        '85746': 28000, '85747': 22000, '85748': 12000, '85749': 14000, '85750': 16000,
+        '85755': 18000, '85756': 30000, '85757': 20000,
+        '85614': 13000, '85629': 22000, '85653': 15000, '85658': 10000,
+        // Washington State - expanded coverage (Census/ACS estimates)
+        // Kitsap Peninsula
+        '98110': 24000, '98310': 22000, '98311': 28000, '98312': 32000,
+        '98315': 18000, '98337': 12000, '98340': 4000, '98342': 3000,
+        '98345': 2000, '98346': 8000, '98353': 3000, '98366': 28000,
+        '98367': 25000, '98370': 22000, '98380': 3000, '98383': 20000,
+        '98392': 4000,
+        // Thurston / Olympia
+        '98501': 28000, '98502': 22000, '98503': 35000, '98506': 18000,
+        '98512': 25000, '98513': 30000, '98516': 22000, '98530': 1500,
+        '98576': 5000, '98579': 8000, '98589': 6000, '98597': 15000,
+        // Mason
+        '98524': 4000, '98528': 8000, '98546': 2000, '98548': 3000,
+        '98555': 1000, '98560': 2000, '98584': 12000, '98588': 2000,
+        '98592': 3000,
+        // Island County
+        '98239': 8000, '98249': 6000, '98253': 3000, '98260': 5000,
+        '98277': 28000, '98278': 18000,
+        // Jefferson / Clallam
+        '98325': 3000, '98358': 2000, '98362': 22000, '98363': 12000,
+        '98365': 5000, '98368': 12000, '98376': 2000, '98382': 14000,
+        // Lewis
+        '98336': 1000, '98356': 3000, '98361': 2000, '98377': 1500,
+        '98531': 18000, '98532': 12000, '98533': 800, '98538': 500,
+        '98542': 800, '98544': 600, '98564': 1500, '98565': 3000,
+        '98570': 2500, '98582': 1000, '98585': 800, '98591': 2500,
+        '98596': 3000,
+        // Grays Harbor
+        '98520': 18000, '98541': 5000, '98557': 3000, '98559': 4000,
+        '98563': 5000, '98568': 1500, '98575': 800, '98583': 1000,
+        // Pierce expanded
+        '98303': 1500, '98385': 6000, '98387': 38000, '98388': 8000,
+        '98394': 2000, '98396': 2000, '98438': 5000, '98498': 28000,
+        '98499': 22000, '98558': 4000, '98580': 5000,
+        // Whatcom / Bellingham area (on map, outside tiers)
+        '98220': 2000, '98229': 32000,
+        // Chelan / Wenatchee
+        '98801': 35000, '98826': 4000, '98847': 2000,
+        // Yakima / Kittitas
+        '98922': 4000, '98925': 1500, '98926': 22000, '98929': 2000,
+        '98937': 3000, '98940': 500, '98941': 2000, '98943': 1000, '98946': 800
     };
 
     let population;
@@ -1257,44 +1334,43 @@ function getEstimatedPopulation(zip) {
         // Arizona estimates
         // Phoenix urban core (850xx)
         else if (zipPrefix === '850') {
-            population = Math.floor(28000 + rand * 35000);
+            population = Math.floor(18000 + rand * 25000);
         }
         // Phoenix metro - Mesa/Chandler/Gilbert/Tempe (852xx)
         else if (zipPrefix === '852') {
-            population = Math.floor(30000 + rand * 30000);
+            population = Math.floor(18000 + rand * 25000);
         }
-        // Phoenix metro - Scottsdale/Fountain Hills (852xx handled above)
         // Phoenix suburbs - Glendale/Peoria/Surprise (853xx)
         else if (zipPrefix === '853') {
-            population = Math.floor(25000 + rand * 35000);
+            population = Math.floor(12000 + rand * 22000);
         }
-        // Phoenix outer suburbs - Goodyear/Buckeye/Queen Creek (851xx)
+        // Phoenix outer suburbs - Pinal County towns (851xx)
         else if (zipPrefix === '851') {
-            population = Math.floor(18000 + rand * 30000);
+            population = Math.floor(8000 + rand * 18000);
         }
         // Tucson urban (857xx)
         else if (zipPrefix === '857') {
-            population = Math.floor(22000 + rand * 30000);
+            population = Math.floor(14000 + rand * 20000);
         }
         // Tucson suburbs/Southern AZ (856xx)
         else if (zipPrefix === '856') {
-            population = Math.floor(8000 + rand * 22000);
+            population = Math.floor(3000 + rand * 15000);
         }
         // Rural AZ - Pinal County towns (854xx)
         else if (zipPrefix === '854') {
-            population = Math.floor(5000 + rand * 20000);
+            population = Math.floor(2000 + rand * 12000);
         }
         // Rural AZ - Cochise/Graham/Gila/Greenlee (855xx)
         else if (zipPrefix === '855') {
-            population = Math.floor(3000 + rand * 15000);
+            population = Math.floor(1500 + rand * 10000);
         }
         // Northern AZ - Yavapai/Prescott area (863xx)
         else if (zipPrefix === '863') {
-            population = Math.floor(8000 + rand * 25000);
+            population = Math.floor(4000 + rand * 18000);
         }
         // Rural/remote AZ (858, 859, 860, 861, 862, 864, 865)
         else if (['858', '859', '860', '861', '862', '864', '865'].includes(zipPrefix)) {
-            population = Math.floor(2000 + rand * 12000);
+            population = Math.floor(800 + rand * 6000);
         }
         // Default estimate
         else {
@@ -2021,7 +2097,8 @@ function calculateNearbyZips() {
     // Load tier data from all regions (defined in embedded-data.js)
     const tierSources = [
         { name: 'SoCal', data: typeof SOCAL_TIER_DATA !== 'undefined' ? SOCAL_TIER_DATA : null },
-        { name: 'AZ', data: typeof AZ_TIER_DATA !== 'undefined' ? AZ_TIER_DATA : null }
+        { name: 'AZ', data: typeof AZ_TIER_DATA !== 'undefined' ? AZ_TIER_DATA : null },
+        { name: 'WA', data: typeof WA_TIER_DATA !== 'undefined' ? WA_TIER_DATA : null }
     ];
 
     tierSources.forEach(({ name, data }) => {
@@ -2104,15 +2181,15 @@ function updateStatisticsPanel() {
                 <span class="stat-value">${totalServiceZips.toLocaleString()}</span>
             </div>
             <div class="stat-row">
-                <span class="stat-label">Tier 1 (SoCal)</span>
+                <span class="stat-label">Tier 1 (0-50mi)</span>
                 <span class="stat-value">${tier1Count.toLocaleString()}</span>
             </div>
             <div class="stat-row">
-                <span class="stat-label">Tier 2 (SoCal)</span>
+                <span class="stat-label">Tier 2 (50-70mi)</span>
                 <span class="stat-value">${tier2Count.toLocaleString()}</span>
             </div>
             <div class="stat-row">
-                <span class="stat-label">Tier 3 (SoCal)</span>
+                <span class="stat-label">Tier 3 (70-100mi)</span>
                 <span class="stat-value">${tier3Count.toLocaleString()}</span>
             </div>
         </div>

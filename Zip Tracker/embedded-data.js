@@ -294,7 +294,52 @@ const LANDMARKS = [
     { name: "Pioneer Square", lat: 47.6014, lng: -122.3328, type: "district" },
     { name: "Point Defiance Zoo", lat: 47.3050, lng: -122.5152, type: "attraction" },
     { name: "Snoqualmie Casino", lat: 47.5297, lng: -121.8384, type: "casino" },
-    { name: "Emerald Downs", lat: 47.2583, lng: -122.2369, type: "sports" }
+    { name: "Emerald Downs", lat: 47.2583, lng: -122.2369, type: "sports" },
+
+    // Expanded Washington Coverage (50-120mi from Kent crematory)
+    // Kitsap Peninsula / Bremerton
+    { name: "Bremerton Ferry Terminal", lat: 47.5615, lng: -122.6248, type: "landmark" },
+    { name: "Puget Sound Naval Shipyard", lat: 47.5537, lng: -122.6413, type: "landmark" },
+    { name: "Kitsap Mall", lat: 47.6432, lng: -122.6301, type: "shopping" },
+
+    // Olympia / Thurston
+    { name: "Washington State Capitol", lat: 47.0379, lng: -122.9007, type: "landmark" },
+    { name: "Olympia Farmers Market", lat: 47.0490, lng: -122.9055, type: "shopping" },
+    { name: "Evergreen State College", lat: 47.0735, lng: -122.9516, type: "university" },
+    { name: "Capitol Lake", lat: 47.0380, lng: -122.9065, type: "park" },
+
+    // Island County / Whidbey
+    { name: "Deception Pass State Park", lat: 48.3935, lng: -122.6459, type: "park" },
+    { name: "NAS Whidbey Island", lat: 48.3515, lng: -122.6556, type: "landmark" },
+
+    // Jefferson / Clallam / Olympic Peninsula
+    { name: "Olympic National Park (Hurricane Ridge)", lat: 47.9694, lng: -123.4988, type: "park" },
+    { name: "Port Townsend Historic District", lat: 48.1170, lng: -122.7604, type: "district" },
+    { name: "Sequim Lavender Farms", lat: 48.0795, lng: -123.1013, type: "attraction" },
+
+    // Lewis / Centralia-Chehalis
+    { name: "Centralia Factory Outlets", lat: 46.7166, lng: -122.9544, type: "shopping" },
+    { name: "Mount Rainier National Park", lat: 46.8523, lng: -121.7603, type: "park" },
+    { name: "White Pass Ski Area", lat: 46.6375, lng: -121.3914, type: "attraction" },
+
+    // Grays Harbor
+    { name: "Westport Marina", lat: 46.8890, lng: -124.1040, type: "landmark" },
+    { name: "Ocean Shores Beach", lat: 46.9737, lng: -124.1554, type: "beach" },
+
+    // Whatcom / Bellingham
+    { name: "Western Washington University", lat: 48.7348, lng: -122.4862, type: "university" },
+    { name: "Bellingham Whatcom Museum", lat: 48.7519, lng: -122.4787, type: "museum" },
+    { name: "Bellis Fair Mall", lat: 48.7880, lng: -122.4886, type: "shopping" },
+    { name: "Mount Baker Ski Area", lat: 48.8566, lng: -121.6631, type: "attraction" },
+
+    // Chelan / Wenatchee / Leavenworth
+    { name: "Leavenworth Bavarian Village", lat: 47.5962, lng: -120.6615, type: "attraction" },
+    { name: "Wenatchee Valley Mall", lat: 47.4307, lng: -120.3467, type: "shopping" },
+
+    // Yakima / Kittitas
+    { name: "Snoqualmie Pass Ski Area", lat: 47.4282, lng: -121.4138, type: "attraction" },
+    { name: "Central Washington University", lat: 46.9965, lng: -120.5478, type: "university" },
+    { name: "Cle Elum Historic Downtown", lat: 47.1954, lng: -120.9393, type: "district" }
 ];
 
 // Service area data by county
@@ -1795,6 +1840,36 @@ const AZ_TIER_DATA = {
     "86351": 3
 };
 
+// Washington Distance Tier Data - covers Seattle (Kent) crematory
+// Core service area = green (in SERVICE_AREA_DATA), Tier 1 (<=50mi), Tier 2 (50-70mi), Tier 3 (70-100mi)
+const WA_TIER_DATA = {
+    // Tier 1 (<=50mi) - Blue
+    "98110": 1, "98303": 1, "98310": 1, "98311": 1, "98312": 1,
+    "98314": 1, "98315": 1, "98320": 1, "98337": 1, "98340": 1,
+    "98342": 1, "98345": 1, "98346": 1, "98353": 1, "98364": 1,
+    "98365": 1, "98366": 1, "98367": 1, "98370": 1, "98380": 1,
+    "98383": 1, "98385": 1, "98387": 1, "98388": 1, "98392": 1,
+    "98394": 1, "98396": 1, "98438": 1, "98498": 1, "98499": 1,
+    "98503": 1, "98506": 1, "98516": 1, "98524": 1, "98528": 1,
+    "98546": 1, "98558": 1, "98580": 1, "98588": 1,
+    // Tier 2 (50-70mi) - Yellow
+    "98068": 2, "98205": 2, "98224": 2, "98249": 2, "98253": 2,
+    "98260": 2, "98288": 2, "98325": 2, "98358": 2, "98368": 2,
+    "98376": 2, "98501": 2, "98502": 2, "98512": 2, "98513": 2,
+    "98530": 2, "98548": 2, "98555": 2, "98560": 2, "98576": 2,
+    "98584": 2, "98589": 2, "98592": 2, "98597": 2, "98925": 2,
+    // Tier 3 (70-100mi) - Orange
+    "98235": 3, "98238": 3, "98239": 3, "98255": 3, "98277": 3,
+    "98278": 3, "98336": 3, "98356": 3, "98361": 3, "98362": 3,
+    "98377": 3, "98382": 3, "98520": 3, "98531": 3, "98532": 3,
+    "98533": 3, "98538": 3, "98541": 3, "98542": 3, "98544": 3,
+    "98557": 3, "98559": 3, "98563": 3, "98564": 3, "98565": 3,
+    "98568": 3, "98570": 3, "98575": 3, "98579": 3, "98582": 3,
+    "98583": 3, "98585": 3, "98591": 3, "98596": 3, "98826": 3,
+    "98847": 3, "98922": 3, "98929": 3, "98937": 3, "98940": 3,
+    "98941": 3, "98943": 3, "98946": 3
+};
+
 // Zip codes that contain crematory locations (for yellow border highlighting)
 const CREMATORY_ZIP_CODES = [
     "92805",  // Gardens - Anaheim
@@ -3188,6 +3263,156 @@ function populateZipCityCountyData() {
         '98465': { city: 'Tacoma', county: 'Pierce' },
         '98466': { city: 'Tacoma', county: 'Pierce' },
         '98467': { city: 'Tacoma', county: 'Pierce' },
+
+        // Expanded Washington Coverage (Kitsap, Thurston, Mason, Island, Jefferson, Clallam, Lewis, Grays Harbor, etc.)
+        '98068': { city: 'Snoqualmie Pass', county: 'King' },
+        '98110': { city: 'Bainbridge Island', county: 'Kitsap' },
+        '98205': { city: 'Everett', county: 'Snohomish' },
+        '98220': { city: 'Acme', county: 'Whatcom' },
+        '98222': { city: 'Blakely Island', county: 'San Juan' },
+        '98224': { city: 'Baring', county: 'King' },
+        '98229': { city: 'Bellingham', county: 'Whatcom' },
+        '98235': { city: 'Clearlake', county: 'Skagit' },
+        '98238': { city: 'Conway', county: 'Skagit' },
+        '98239': { city: 'Coupeville', county: 'Island' },
+        '98243': { city: 'Eastsound', county: 'San Juan' },
+        '98245': { city: 'Eastsound', county: 'San Juan' },
+        '98249': { city: 'Freeland', county: 'Island' },
+        '98253': { city: 'Greenbank', county: 'Island' },
+        '98255': { city: 'Hamilton', county: 'Skagit' },
+        '98260': { city: 'Langley', county: 'Island' },
+        '98261': { city: 'Lopez Island', county: 'San Juan' },
+        '98262': { city: 'Lummi Island', county: 'Whatcom' },
+        '98277': { city: 'Oak Harbor', county: 'Island' },
+        '98278': { city: 'Oak Harbor', county: 'Island' },
+        '98279': { city: 'Olga', county: 'San Juan' },
+        '98280': { city: 'Orcas', county: 'San Juan' },
+        '98286': { city: 'Shaw Island', county: 'San Juan' },
+        '98288': { city: 'Skykomish', county: 'King' },
+        '98303': { city: 'Anderson Island', county: 'Pierce' },
+        '98310': { city: 'Bremerton', county: 'Kitsap' },
+        '98311': { city: 'Bremerton', county: 'Kitsap' },
+        '98312': { city: 'Bremerton', county: 'Kitsap' },
+        '98314': { city: 'Bremerton', county: 'Kitsap' },
+        '98315': { city: 'Silverdale', county: 'Kitsap' },
+        '98320': { city: 'Belfair', county: 'Mason' },
+        '98325': { city: 'Chimacum', county: 'Jefferson' },
+        '98336': { city: 'Glenoma', county: 'Lewis' },
+        '98337': { city: 'Bremerton', county: 'Kitsap' },
+        '98340': { city: 'Hansville', county: 'Kitsap' },
+        '98342': { city: 'Indianola', county: 'Kitsap' },
+        '98345': { city: 'Keyport', county: 'Kitsap' },
+        '98346': { city: 'Kingston', county: 'Kitsap' },
+        '98353': { city: 'Manchester', county: 'Kitsap' },
+        '98356': { city: 'Morton', county: 'Lewis' },
+        '98358': { city: 'Nordland', county: 'Jefferson' },
+        '98361': { city: 'Packwood', county: 'Lewis' },
+        '98362': { city: 'Port Angeles', county: 'Clallam' },
+        '98363': { city: 'Port Angeles', county: 'Clallam' },
+        '98364': { city: 'Kingston', county: 'Kitsap' },
+        '98365': { city: 'Port Ludlow', county: 'Jefferson' },
+        '98366': { city: 'Port Orchard', county: 'Kitsap' },
+        '98367': { city: 'Port Orchard', county: 'Kitsap' },
+        '98368': { city: 'Port Townsend', county: 'Jefferson' },
+        '98370': { city: 'Poulsbo', county: 'Kitsap' },
+        '98376': { city: 'Quilcene', county: 'Jefferson' },
+        '98377': { city: 'Randle', county: 'Lewis' },
+        '98380': { city: 'Seabeck', county: 'Kitsap' },
+        '98382': { city: 'Sequim', county: 'Clallam' },
+        '98383': { city: 'Silverdale', county: 'Kitsap' },
+        '98385': { city: 'Buckley', county: 'Pierce' },
+        '98387': { city: 'Spanaway', county: 'Pierce' },
+        '98388': { city: 'Steilacoom', county: 'Pierce' },
+        '98392': { city: 'Suquamish', county: 'Kitsap' },
+        '98394': { city: 'Vaughn', county: 'Pierce' },
+        '98396': { city: 'Wilkeson', county: 'Pierce' },
+        '98438': { city: 'McChord AFB', county: 'Pierce' },
+        '98498': { city: 'Lakewood', county: 'Pierce' },
+        '98499': { city: 'Lakewood', county: 'Pierce' },
+        '98501': { city: 'Olympia', county: 'Thurston' },
+        '98502': { city: 'Olympia', county: 'Thurston' },
+        '98503': { city: 'Olympia', county: 'Thurston' },
+        '98506': { city: 'Olympia', county: 'Thurston' },
+        '98512': { city: 'Olympia', county: 'Thurston' },
+        '98513': { city: 'Olympia', county: 'Thurston' },
+        '98516': { city: 'Olympia', county: 'Thurston' },
+        '98520': { city: 'Aberdeen', county: 'Grays Harbor' },
+        '98524': { city: 'Allyn', county: 'Mason' },
+        '98526': { city: 'Amanda Park', county: 'Grays Harbor' },
+        '98528': { city: 'Belfair', county: 'Mason' },
+        '98530': { city: 'Bucoda', county: 'Thurston' },
+        '98531': { city: 'Centralia', county: 'Lewis' },
+        '98532': { city: 'Chehalis', county: 'Lewis' },
+        '98533': { city: 'Cinebar', county: 'Lewis' },
+        '98535': { city: 'Copalis Beach', county: 'Grays Harbor' },
+        '98536': { city: 'Copalis Crossing', county: 'Grays Harbor' },
+        '98537': { city: 'Cosmopolis', county: 'Grays Harbor' },
+        '98538': { city: 'Curtis', county: 'Lewis' },
+        '98541': { city: 'Elma', county: 'Grays Harbor' },
+        '98542': { city: 'Ethel', county: 'Lewis' },
+        '98544': { city: 'Galvin', county: 'Lewis' },
+        '98546': { city: 'Grapeview', county: 'Mason' },
+        '98548': { city: 'Hoodsport', county: 'Mason' },
+        '98550': { city: 'Hoquiam', county: 'Grays Harbor' },
+        '98552': { city: 'Humptulips', county: 'Grays Harbor' },
+        '98555': { city: 'Lilliwaup', county: 'Mason' },
+        '98557': { city: 'McCleary', county: 'Grays Harbor' },
+        '98558': { city: 'McKenna', county: 'Pierce' },
+        '98559': { city: 'Malone', county: 'Grays Harbor' },
+        '98560': { city: 'Matlock', county: 'Mason' },
+        '98563': { city: 'Montesano', county: 'Grays Harbor' },
+        '98564': { city: 'Mossyrock', county: 'Lewis' },
+        '98565': { city: 'Napavine', county: 'Lewis' },
+        '98568': { city: 'Oakville', county: 'Grays Harbor' },
+        '98570': { city: 'Onalaska', county: 'Lewis' },
+        '98571': { city: 'Pacific Beach', county: 'Grays Harbor' },
+        '98572': { city: 'Pe Ell', county: 'Lewis' },
+        '98575': { city: 'Quinault', county: 'Grays Harbor' },
+        '98576': { city: 'Rainier', county: 'Thurston' },
+        '98577': { city: 'Raymond', county: 'Pacific' },
+        '98579': { city: 'Rochester', county: 'Thurston' },
+        '98580': { city: 'Roy', county: 'Pierce' },
+        '98581': { city: 'Ryderwood', county: 'Cowlitz' },
+        '98582': { city: 'Salkum', county: 'Lewis' },
+        '98583': { city: 'Satsop', county: 'Grays Harbor' },
+        '98584': { city: 'Shelton', county: 'Mason' },
+        '98585': { city: 'Silver Creek', county: 'Lewis' },
+        '98588': { city: 'Tahuya', county: 'Mason' },
+        '98589': { city: 'Tenino', county: 'Thurston' },
+        '98591': { city: 'Toledo', county: 'Lewis' },
+        '98592': { city: 'Union', county: 'Mason' },
+        '98593': { city: 'Vader', county: 'Lewis' },
+        '98596': { city: 'Winlock', county: 'Lewis' },
+        '98597': { city: 'Yelm', county: 'Thurston' },
+        '98611': { city: 'Castle Rock', county: 'Cowlitz' },
+        '98616': { city: 'Cougar', county: 'Skamania' },
+        '98626': { city: 'Kelso', county: 'Cowlitz' },
+        '98632': { city: 'Longview', county: 'Cowlitz' },
+        '98645': { city: 'Silverlake', county: 'Cowlitz' },
+        '98649': { city: 'Toutle', county: 'Cowlitz' },
+        '98801': { city: 'Wenatchee', county: 'Chelan' },
+        '98811': { city: 'Ardenvoir', county: 'Chelan' },
+        '98815': { city: 'Cashmere', county: 'Chelan' },
+        '98821': { city: 'Cashmere', county: 'Chelan' },
+        '98822': { city: 'Entiat', county: 'Chelan' },
+        '98826': { city: 'Leavenworth', county: 'Chelan' },
+        '98836': { city: 'Monitor', county: 'Chelan' },
+        '98847': { city: 'Peshastin', county: 'Chelan' },
+        '98903': { city: 'Yakima', county: 'Yakima' },
+        '98908': { city: 'Yakima', county: 'Yakima' },
+        '98922': { city: 'Cle Elum', county: 'Kittitas' },
+        '98923': { city: 'Cowiche', county: 'Yakima' },
+        '98925': { city: 'Easton', county: 'Kittitas' },
+        '98926': { city: 'Ellensburg', county: 'Kittitas' },
+        '98929': { city: 'Kittitas', county: 'Kittitas' },
+        '98934': { city: 'Kittitas', county: 'Kittitas' },
+        '98937': { city: 'Naches', county: 'Yakima' },
+        '98940': { city: 'Ronald', county: 'Kittitas' },
+        '98941': { city: 'Roslyn', county: 'Kittitas' },
+        '98942': { city: 'Selah', county: 'Yakima' },
+        '98943': { city: 'South Cle Elum', county: 'Kittitas' },
+        '98946': { city: 'Thorp', county: 'Kittitas' },
+        '98947': { city: 'Tieton', county: 'Yakima' },
     };
 
     // Iterate through all zip codes on the map
@@ -3252,6 +3477,14 @@ function populateZipCityCountyData() {
                     county = 'Snohomish';
                 } else if (['983', '984'].includes(prefix)) {
                     county = 'Pierce';
+                } else if (['985'].includes(prefix)) {
+                    county = 'Thurston / Lewis';
+                } else if (['986'].includes(prefix)) {
+                    county = 'Cowlitz';
+                } else if (['988'].includes(prefix)) {
+                    county = 'Chelan';
+                } else if (['989'].includes(prefix)) {
+                    county = 'Yakima';
                 }
 
                 state.zipToCityCounty.set(zip, { city: '', county: county });
