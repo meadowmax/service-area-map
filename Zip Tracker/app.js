@@ -135,7 +135,7 @@ const CONFIG = {
     // Colors for zip code styling
     colors: {
         serviceArea: '#4CAF50',      // Green for in service area (Tier 0)
-        tier1: '#26A69A',            // Teal for Tier 1
+        tier1: '#AB47BC',            // Teal for Tier 1
         tier2: '#FFF176',            // Yellow for Tier 2
         tier3: '#FF9800',            // Orange for Tier 3
         nearbyArea: '#FFF176',       // Yellow for within 42 miles of crematory (non-SoCal fallback)
@@ -2457,7 +2457,7 @@ function updateViewportStats() {
                 </button>
             </div>
             <div class="viewport-stat nearby">
-                <div class="stat-icon" style="background: #26A69A;"></div>
+                <div class="stat-icon" style="background: #AB47BC;"></div>
                 <div class="stat-info">
                     <span class="stat-label">Tier 1</span>
                     <span class="stat-value">${inViewTier1} zips</span>
