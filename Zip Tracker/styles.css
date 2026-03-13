@@ -608,6 +608,12 @@ body {
     color: #777;
 }
 
+.viewport-stat .stat-deaths {
+    font-size: 0.7rem;
+    color: #999;
+    font-style: italic;
+}
+
 .viewport-total {
     margin-top: 12px;
     padding-top: 10px;

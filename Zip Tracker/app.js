@@ -1447,6 +1447,41 @@ function getCountyDeathStats(zip, countyDisplay) {
     };
 }
 
+/**
+ * Estimate zip-level annual deaths and cremations using county crude rate.
+ * Returns { deaths, cremations } (annual) or null if no data.
+ */
+function getZipDeathEstimate(zip, population) {
+    if (typeof COUNTY_DEATH_DATA === 'undefined' || !population) return null;
+
+    const cityCounty = state.zipToCityCounty.get(zip);
+    let county = cityCounty ? cityCounty.county : '';
+
+    if (county.includes('/')) {
+        county = county.split('/')[0].trim();
+    }
+
+    if (!county) return null;
+
+    const prefix = zip.substring(0, 2);
+    let stateCode = '';
+    if (prefix >= '90' && prefix <= '96') stateCode = 'CA';
+    else if (prefix >= '75' && prefix <= '79') stateCode = 'TX';
+    else if (prefix >= '85' && prefix <= '86') stateCode = 'AZ';
+    else if (prefix >= '98' && prefix <= '99') stateCode = 'WA';
+
+    if (!stateCode) return null;
+
+    const key = `${county}, ${stateCode}`;
+    const countyData = COUNTY_DEATH_DATA[key];
+    if (!countyData) return null;
+
+    const annualDeaths = population * countyData.crudeRate / 100000;
+    const annualCremations = annualDeaths * countyData.cremationRate;
+
+    return { deaths: annualDeaths, cremations: annualCremations };
+}
+
 // ============================================================================
 // Excel File Processing
 // ============================================================================
@@ -2324,6 +2359,12 @@ function updateViewportStats() {
     let tier2Population = 0;
     let tier3Population = 0;
     let outsidePopulation = 0;
+    // Death/cremation accumulators per tier (annual, converted to monthly at display)
+    let serviceDeaths = 0, serviceCremations = 0;
+    let tier1Deaths = 0, tier1Cremations = 0;
+    let tier2Deaths = 0, tier2Cremations = 0;
+    let tier3Deaths = 0, tier3Cremations = 0;
+    let outsideDeaths = 0, outsideCremations = 0;
 
     // Count zips in current view
     state.zipCodeLayer.eachLayer(layer => {
@@ -2338,22 +2379,37 @@ function updateViewportStats() {
         const population = getEstimatedPopulation(zip);
         const tier = state.tierZips.get(zip);
 
+        // Estimate zip-level deaths using county crude rate
+        const zipDeathInfo = getZipDeathEstimate(zip, population);
+        const zipDeaths = zipDeathInfo ? zipDeathInfo.deaths : 0;
+        const zipCremations = zipDeathInfo ? zipDeathInfo.cremations : 0;
+
         // Tier assignment supersedes service area when both exist
         if (tier === 1) {
             inViewTier1++;
             tier1Population += population;
+            tier1Deaths += zipDeaths;
+            tier1Cremations += zipCremations;
         } else if (tier === 2) {
             inViewTier2++;
             tier2Population += population;
+            tier2Deaths += zipDeaths;
+            tier2Cremations += zipCremations;
         } else if (tier === 3) {
             inViewTier3++;
             tier3Population += population;
+            tier3Deaths += zipDeaths;
+            tier3Cremations += zipCremations;
         } else if (state.serviceAreaZips.has(zip)) {
             inViewServiceArea++;
             serviceAreaPopulation += population;
+            serviceDeaths += zipDeaths;
+            serviceCremations += zipCremations;
         } else {
             inViewOutside++;
             outsidePopulation += population;
+            outsideDeaths += zipDeaths;
+            outsideCremations += zipCremations;
         }
     });
 
@@ -2372,6 +2428,20 @@ function updateViewportStats() {
     const tier3Percent = totalPopInView > 0 ? Math.round((tier3Population / totalPopInView) * 100) : 0;
     const outsidePercent = totalPopInView > 0 ? Math.round((outsidePopulation / totalPopInView) * 100) : 0;
 
+    // Convert annual accumulators to monthly for display
+    const svcDeathsMo = Math.round(serviceDeaths / 12);
+    const svcCremMo = Math.round(serviceCremations / 12);
+    const t1DeathsMo = Math.round(tier1Deaths / 12);
+    const t1CremMo = Math.round(tier1Cremations / 12);
+    const t2DeathsMo = Math.round(tier2Deaths / 12);
+    const t2CremMo = Math.round(tier2Cremations / 12);
+    const t3DeathsMo = Math.round(tier3Deaths / 12);
+    const t3CremMo = Math.round(tier3Cremations / 12);
+    const outDeathsMo = Math.round(outsideDeaths / 12);
+    const outCremMo = Math.round(outsideCremations / 12);
+    const totalDeathsMo = svcDeathsMo + t1DeathsMo + t2DeathsMo + t3DeathsMo + outDeathsMo;
+    const totalCremMo = svcCremMo + t1CremMo + t2CremMo + t3CremMo + outCremMo;
+
     let html = `
         <div class="viewport-stat-group">
             <div class="viewport-stat service">
@@ -2380,6 +2450,7 @@ function updateViewportStats() {
                     <span class="stat-label">In Service Area</span>
                     <span class="stat-value">${inViewServiceArea} zips</span>
                     <span class="stat-pop">${serviceAreaPopulation.toLocaleString()} pop (${servicePercent}%)</span>
+                    ${svcDeathsMo > 0 ? `<span class="stat-deaths">~${svcDeathsMo.toLocaleString()} deaths/mo · ~${svcCremMo.toLocaleString()} cremations/mo</span>` : ''}
                 </div>
                 <button class="bucket-download-btn" onclick="downloadBucketCSV('service')" title="Download CSV" ${inViewServiceArea === 0 ? 'disabled' : ''}>
                     <i class="fas fa-download"></i>
@@ -2391,6 +2462,7 @@ function updateViewportStats() {
                     <span class="stat-label">Tier 1</span>
                     <span class="stat-value">${inViewTier1} zips</span>
                     <span class="stat-pop">${tier1Population.toLocaleString()} pop (${tier1Percent}%)</span>
+                    ${t1DeathsMo > 0 ? `<span class="stat-deaths">~${t1DeathsMo.toLocaleString()} deaths/mo · ~${t1CremMo.toLocaleString()} cremations/mo</span>` : ''}
                 </div>
                 <button class="bucket-download-btn" onclick="downloadBucketCSV('tier1')" title="Download CSV" ${inViewTier1 === 0 ? 'disabled' : ''}>
                     <i class="fas fa-download"></i>
@@ -2402,6 +2474,7 @@ function updateViewportStats() {
                     <span class="stat-label">Tier 2</span>
                     <span class="stat-value">${inViewTier2} zips</span>
                     <span class="stat-pop">${tier2Population.toLocaleString()} pop (${tier2Percent}%)</span>
+                    ${t2DeathsMo > 0 ? `<span class="stat-deaths">~${t2DeathsMo.toLocaleString()} deaths/mo · ~${t2CremMo.toLocaleString()} cremations/mo</span>` : ''}
                 </div>
                 <button class="bucket-download-btn" onclick="downloadBucketCSV('tier2')" title="Download CSV" ${inViewTier2 === 0 ? 'disabled' : ''}>
                     <i class="fas fa-download"></i>
@@ -2413,6 +2486,7 @@ function updateViewportStats() {
                     <span class="stat-label">Tier 3</span>
                     <span class="stat-value">${inViewTier3} zips</span>
                     <span class="stat-pop">${tier3Population.toLocaleString()} pop (${tier3Percent}%)</span>
+                    ${t3DeathsMo > 0 ? `<span class="stat-deaths">~${t3DeathsMo.toLocaleString()} deaths/mo · ~${t3CremMo.toLocaleString()} cremations/mo</span>` : ''}
                 </div>
                 <button class="bucket-download-btn" onclick="downloadBucketCSV('tier3')" title="Download CSV" ${inViewTier3 === 0 ? 'disabled' : ''}>
                     <i class="fas fa-download"></i>
@@ -2424,6 +2498,7 @@ function updateViewportStats() {
                     <span class="stat-label">Outside Range</span>
                     <span class="stat-value">${inViewOutside} zips</span>
                     <span class="stat-pop">${outsidePopulation.toLocaleString()} pop (${outsidePercent}%)</span>
+                    ${outDeathsMo > 0 ? `<span class="stat-deaths">~${outDeathsMo.toLocaleString()} deaths/mo · ~${outCremMo.toLocaleString()} cremations/mo</span>` : ''}
                 </div>
                 <button class="bucket-download-btn" onclick="downloadBucketCSV('outside')" title="Download CSV" ${inViewOutside === 0 ? 'disabled' : ''}>
                     <i class="fas fa-download"></i>
@@ -2431,7 +2506,8 @@ function updateViewportStats() {
             </div>
         </div>
         <div class="viewport-total">
-            <strong>Total in View:</strong> ${totalInView} zips • ${totalPopInView.toLocaleString()} est. population
+            <strong>Total in View:</strong> ${totalInView} zips · ${totalPopInView.toLocaleString()} est. population
+            ${totalDeathsMo > 0 ? `<br><strong>Est. Monthly:</strong> ~${totalDeathsMo.toLocaleString()} deaths · ~${totalCremMo.toLocaleString()} cremations` : ''}
         </div>
     `;
 
