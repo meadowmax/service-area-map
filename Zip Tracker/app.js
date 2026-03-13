@@ -892,6 +892,26 @@ function createPopupContent(zip, hasRealDistances = false) {
         `;
     }
 
+    // Show county-level death and cremation estimates (monthly)
+    const countyStats = getCountyDeathStats(zip, countyDisplay);
+    if (countyStats) {
+        const monthlyDeaths = Math.round(countyStats.deaths / 12);
+        const monthlyCremations = Math.round(countyStats.cremations / 12);
+        html += `
+        <div class="popup-section" style="margin-top:8px;padding-top:8px;border-top:1px solid #eee;">
+            <div style="font-size:0.75rem;color:#999;margin-bottom:4px;">${countyStats.countyLabel} County</div>
+            <div class="popup-row">
+                <span class="popup-label">Deaths/mo:</span>
+                <span class="popup-value">${monthlyDeaths.toLocaleString()}</span>
+            </div>
+            <div class="popup-row">
+                <span class="popup-label">Cremations/mo:</span>
+                <span class="popup-value">${monthlyCremations.toLocaleString()} <span style="font-size:0.75rem;color:#999">(${(countyStats.cremationRate * 100).toFixed(0)}%)</span></span>
+            </div>
+        </div>
+        `;
+    }
+
     // Show service area status with tier info
     const tier = state.tierZips.get(zip);
     let statusClass = isServiceArea ? 'in-service' : 'out-service';
@@ -1381,6 +1401,50 @@ function getEstimatedPopulation(zip) {
     // Cache the result
     populationCache.set(zip, population);
     return population;
+}
+
+/**
+ * Get county-level annual death and cremation totals for a zip code.
+ * Returns the whole county's numbers (not zip-level estimates).
+ */
+function getCountyDeathStats(zip, countyDisplay) {
+    if (typeof COUNTY_DEATH_DATA === 'undefined') return null;
+
+    // Resolve county name from city/county data first, then popup display
+    const cityCounty = state.zipToCityCounty.get(zip);
+    let county = cityCounty ? cityCounty.county : (countyDisplay || '');
+
+    // Handle compound counties (e.g. "Thurston / Lewis") - take first
+    if (county.includes('/')) {
+        county = county.split('/')[0].trim();
+    }
+
+    if (!county) return null;
+
+    // Determine state from zip prefix
+    const prefix = zip.substring(0, 2);
+    let stateCode = '';
+    if (prefix >= '90' && prefix <= '96') stateCode = 'CA';
+    else if (prefix >= '75' && prefix <= '79') stateCode = 'TX';
+    else if (prefix >= '85' && prefix <= '86') stateCode = 'AZ';
+    else if (prefix >= '98' && prefix <= '99') stateCode = 'WA';
+
+    if (!stateCode) return null;
+
+    const key = `${county}, ${stateCode}`;
+    const countyData = COUNTY_DEATH_DATA[key];
+
+    if (!countyData) return null;
+
+    const annualCremations = Math.round(countyData.deaths * countyData.cremationRate);
+
+    return {
+        deaths: countyData.deaths,
+        cremations: annualCremations,
+        cremationRate: countyData.cremationRate,
+        countyLabel: county,
+        stateCode: stateCode
+    };
 }
 
 // ============================================================================
