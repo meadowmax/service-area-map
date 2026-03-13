@@ -106,6 +106,27 @@ const CONFIG = {
         'Apache'
     ],
 
+    // Northern California counties (Bay Area through Sacramento)
+    norcalCounties: [
+        'San Francisco',
+        'San Mateo',
+        'Santa Clara',
+        'Alameda',
+        'Contra Costa',
+        'Marin',
+        'Sonoma',
+        'Napa',
+        'Solano',
+        'San Joaquin',
+        'Stanislaus',
+        'Sacramento',
+        'Placer',
+        'El Dorado',
+        'Yolo',
+        'Santa Cruz',
+        'Monterey'
+    ],
+
     // Washington State counties (Seattle crematory 120mi radius)
     washingtonCounties: [
         // Core metro
@@ -397,15 +418,18 @@ async function loadCountyBoundaries() {
             const caGeojson = await caResponse.json();
 
             // Filter for Southern California counties only
-            const socalCountyNames = [
+            const caCountyNames = [
+                // SoCal
                 'Los Angeles', 'Orange', 'San Diego', 'Riverside',
                 'San Bernardino', 'Ventura', 'Imperial', 'Kern',
-                'Santa Barbara', 'San Luis Obispo'
+                'Santa Barbara', 'San Luis Obispo',
+                // NorCal
+                ...CONFIG.norcalCounties
             ];
 
             const caFiltered = caGeojson.features.filter(feature => {
                 const name = feature.properties.name || feature.properties.NAME;
-                return socalCountyNames.some(county =>
+                return caCountyNames.some(county =>
                     name && name.toLowerCase().includes(county.toLowerCase())
                 );
             });
@@ -515,14 +539,24 @@ async function loadZipCodeBoundaries() {
 
         // Filter zip codes for each region
         const socalZips = filterSoCalZips(caGeojson);
+        const norcalZips = filterNorCalZips(caGeojson);
         const dfwZips = filterDFWZips(txGeojson);
         const arizonaZips = filterArizonaZips(azGeojson);
         const seattleZips = filterSeattleZips(waGeojson);
 
-        // Combine all regions
+        // Combine all regions (deduplicate CA zips that may appear in both SoCal and NorCal bounding boxes)
+        const seenZips = new Set();
+        const allFeatures = [];
+        [...socalZips.features, ...norcalZips.features, ...dfwZips.features, ...arizonaZips.features, ...seattleZips.features].forEach(f => {
+            const zip = f.properties.ZCTA5CE10 || f.properties.zip || f.properties.GEOID10;
+            if (!seenZips.has(zip)) {
+                seenZips.add(zip);
+                allFeatures.push(f);
+            }
+        });
         const combinedZips = {
             type: 'FeatureCollection',
-            features: [...socalZips.features, ...dfwZips.features, ...arizonaZips.features, ...seattleZips.features]
+            features: allFeatures
         };
 
         // Create the zip code layer
@@ -553,7 +587,7 @@ async function loadZipCodeBoundaries() {
         await loadCountyBoundaries();
 
         hideLoading();
-        console.log(`Loaded ${state.zipCodeData.size} zip codes (CA: ${socalZips.features.length}, TX: ${dfwZips.features.length}, AZ: ${arizonaZips.features.length}, WA: ${seattleZips.features.length})`);
+        console.log(`Loaded ${state.zipCodeData.size} zip codes (SoCal: ${socalZips.features.length}, NorCal: ${norcalZips.features.length}, TX: ${dfwZips.features.length}, AZ: ${arizonaZips.features.length}, WA: ${seattleZips.features.length})`);
 
     } catch (error) {
         console.error('Error loading zip code boundaries:', error);
@@ -573,6 +607,31 @@ function filterSoCalZips(geojson) {
 
     const filteredFeatures = geojson.features.filter(feature => {
         // Get centroid of the feature
+        const coords = getCentroid(feature.geometry);
+        if (!coords) return false;
+
+        const [lng, lat] = coords;
+        return lat >= bounds.minLat && lat <= bounds.maxLat &&
+               lng >= bounds.minLng && lng <= bounds.maxLng;
+    });
+
+    return {
+        type: 'FeatureCollection',
+        features: filteredFeatures
+    };
+}
+
+function filterNorCalZips(geojson) {
+    // Northern California bounding box: Bay Area through Sacramento
+    // Monterey/Santa Cruz (south) to Sonoma/Sacramento (north), coast to Sierra foothills
+    const bounds = {
+        minLat: 36.2,
+        maxLat: 39.2,
+        minLng: -123.5,
+        maxLng: -120.0
+    };
+
+    const filteredFeatures = geojson.features.filter(feature => {
         const coords = getCentroid(feature.geometry);
         if (!coords) return false;
 
@@ -1241,6 +1300,39 @@ function getEstimatedPopulation(zip) {
         '85746': 28000, '85747': 22000, '85748': 12000, '85749': 14000, '85750': 16000,
         '85755': 18000, '85756': 30000, '85757': 20000,
         '85614': 13000, '85629': 22000, '85653': 15000, '85658': 10000,
+        // NorCal - Bay Area & Sacramento (Census/ACS estimates)
+        // San Francisco
+        '94112': 81000, '94109': 55000, '94110': 72000, '94122': 65000, '94116': 58000,
+        '94118': 44000, '94121': 43000, '94103': 39000, '94102': 32000, '94114': 34000,
+        '94117': 38000, '94107': 36000, '94124': 36000, '94134': 42000, '94132': 33000,
+        '94115': 33000, '94133': 28000, '94108': 15000,
+        // San Jose / Santa Clara
+        '95123': 62000, '95122': 58000, '95116': 55000, '95111': 57000, '95127': 54000,
+        '95112': 52000, '95125': 45000, '95148': 47000, '95121': 46000, '95136': 40000,
+        '95128': 38000, '95035': 80000, '95051': 55000, '95050': 42000, '95054': 28000,
+        '95014': 45000, '95132': 38000, '95129': 34000, '95133': 30000, '95126': 35000,
+        // Oakland / Alameda
+        '94601': 46000, '94621': 40000, '94603': 42000, '94605': 45000,
+        '94544': 68000, '94541': 52000, '94538': 55000, '94536': 48000,
+        '94560': 45000, '94587': 55000, '94577': 42000, '94578': 35000,
+        '94579': 22000, '94580': 28000,
+        // Contra Costa
+        '95376': 48000, '94565': 58000, '94509': 52000, '94531': 50000,
+        '94806': 38000, '94804': 35000, '94805': 30000, '94547': 36000,
+        '94520': 42000, '94521': 45000, '94523': 40000, '94553': 30000,
+        // San Mateo
+        '94066': 42000, '94080': 48000, '94015': 52000, '94014': 42000,
+        '94401': 32000, '94402': 30000, '94404': 28000,
+        // Solano
+        '95687': 65000, '95688': 38000, '94585': 45000,
+        // Sacramento
+        '95610': 48000, '95842': 42000, '95823': 55000, '95822': 45000,
+        '95828': 52000, '95826': 42000, '95831': 38000, '95825': 40000,
+        '95820': 38000, '95833': 35000, '95834': 32000, '95835': 30000,
+        '95660': 45000, '95630': 52000, '95662': 35000, '95670': 42000,
+        '95742': 28000, '95758': 48000, '95624': 55000, '95757': 50000,
+        // Placer / Roseville
+        '95648': 42000, '95765': 45000, '95678': 48000, '95661': 40000, '95747': 55000,
         // Washington State - expanded coverage (Census/ACS estimates)
         // Kitsap Peninsula
         '98110': 24000, '98310': 22000, '98311': 28000, '98312': 32000,
@@ -1391,6 +1483,55 @@ function getEstimatedPopulation(zip) {
         // Rural/remote AZ (858, 859, 860, 861, 862, 864, 865)
         else if (['858', '859', '860', '861', '862', '864', '865'].includes(zipPrefix)) {
             population = Math.floor(800 + rand * 6000);
+        }
+        // NorCal estimates
+        // SF/Peninsula urban
+        else if (['940', '941'].includes(zipPrefix)) {
+            population = Math.floor(30000 + rand * 30000);
+        }
+        // San Jose/Santa Clara urban
+        else if (zipPrefix === '950') {
+            population = Math.floor(30000 + rand * 30000);
+        }
+        // San Jose south/Morgan Hill
+        else if (zipPrefix === '951') {
+            population = Math.floor(25000 + rand * 25000);
+        }
+        // Oakland/Hayward/Fremont urban
+        else if (['943', '945'].includes(zipPrefix)) {
+            population = Math.floor(35000 + rand * 25000);
+        }
+        // Contra Costa suburban
+        else if (['946', '947'].includes(zipPrefix)) {
+            population = Math.floor(25000 + rand * 25000);
+        }
+        // San Mateo County
+        else if (zipPrefix === '944') {
+            population = Math.floor(28000 + rand * 22000);
+        }
+        // Marin/Napa/Sonoma suburban
+        else if (['948', '949'].includes(zipPrefix)) {
+            population = Math.floor(20000 + rand * 20000);
+        }
+        // Sacramento suburbs/Roseville/Elk Grove
+        else if (['956', '957', '958'].includes(zipPrefix)) {
+            population = Math.floor(25000 + rand * 25000);
+        }
+        // Stockton/Modesto/Central Valley
+        else if (['952', '953'].includes(zipPrefix)) {
+            population = Math.floor(15000 + rand * 20000);
+        }
+        // Santa Rosa/Sonoma north
+        else if (zipPrefix === '954') {
+            population = Math.floor(15000 + rand * 20000);
+        }
+        // Monterey/Salinas
+        else if (zipPrefix === '939') {
+            population = Math.floor(10000 + rand * 15000);
+        }
+        // Tahoe area (Placer/El Dorado mountain)
+        else if (zipPrefix === '961') {
+            population = Math.floor(3000 + rand * 8000);
         }
         // Default estimate
         else {
