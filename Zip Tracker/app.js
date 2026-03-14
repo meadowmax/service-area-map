@@ -153,6 +153,51 @@ const CONFIG = {
         'Pacific'
     ],
 
+    // Florida counties (Central FL crematory coverage)
+    floridaCounties: [
+        'Pinellas', 'Hillsborough', 'Pasco', 'Manatee', 'Sarasota',
+        'Lee', 'Collier', 'Charlotte', 'Hendry',
+        'Orange', 'Seminole', 'Osceola', 'Lake',
+        'Volusia', 'Brevard', 'Flagler',
+        'Polk'
+    ],
+
+    // Colorado counties (Denver + Colorado Springs)
+    coloradoCounties: [
+        'Denver', 'Jefferson', 'Adams', 'Arapahoe', 'Douglas', 'Boulder', 'Broomfield',
+        'El Paso', 'Teller', 'Pueblo'
+    ],
+
+    // Minnesota counties (Twin Cities metro)
+    minnesotaCounties: [
+        'Hennepin', 'Ramsey', 'Dakota', 'Anoka', 'Washington', 'Scott', 'Carver'
+    ],
+
+    // Maryland counties (DC suburbs)
+    marylandCounties: [
+        "Prince George's", 'Montgomery', 'Anne Arundel', 'Howard', 'Baltimore'
+    ],
+
+    // New Mexico counties (Albuquerque metro)
+    newMexicoCounties: [
+        'Bernalillo', 'Sandoval', 'Valencia', 'Santa Fe', 'Torrance'
+    ],
+
+    // Nevada counties (Las Vegas metro)
+    nevadaCounties: [
+        'Clark', 'Nye'
+    ],
+
+    // Oregon counties (Portland metro)
+    oregonCounties: [
+        'Washington', 'Clackamas', 'Multnomah', 'Marion', 'Yamhill'
+    ],
+
+    // California - Chico area (added to NorCal)
+    chicoCounties: [
+        'Butte', 'Glenn', 'Tehama'
+    ],
+
     // Colors for zip code styling
     colors: {
         serviceArea: '#4CAF50',      // Green for in service area (Tier 0)
@@ -424,7 +469,9 @@ async function loadCountyBoundaries() {
                 'San Bernardino', 'Ventura', 'Imperial', 'Kern',
                 'Santa Barbara', 'San Luis Obispo',
                 // NorCal
-                ...CONFIG.norcalCounties
+                ...CONFIG.norcalCounties,
+                // Chico area
+                ...CONFIG.chicoCounties
             ];
 
             const caFiltered = caGeojson.features.filter(feature => {
@@ -440,11 +487,18 @@ async function loadCountyBoundaries() {
         if (usResponse && usResponse.ok) {
             const usGeojson = await usResponse.json();
 
-            // State FIPS codes: TX=48, AZ=04, WA=53
+            // State FIPS codes
             const stateFilters = {
-                '48': CONFIG.texasCounties,       // Texas
-                '04': CONFIG.arizonaCounties,      // Arizona
-                '53': CONFIG.washingtonCounties     // Washington
+                '48': CONFIG.texasCounties,        // Texas
+                '04': CONFIG.arizonaCounties,       // Arizona
+                '53': CONFIG.washingtonCounties,    // Washington
+                '12': CONFIG.floridaCounties,       // Florida
+                '08': CONFIG.coloradoCounties,      // Colorado
+                '27': CONFIG.minnesotaCounties,     // Minnesota
+                '24': CONFIG.marylandCounties,      // Maryland
+                '35': CONFIG.newMexicoCounties,     // New Mexico
+                '32': CONFIG.nevadaCounties,        // Nevada
+                '41': CONFIG.oregonCounties          // Oregon
             };
 
             const filtered = usGeojson.features.filter(feature => {
@@ -516,11 +570,19 @@ async function loadZipCodeBoundaries() {
 
     try {
         // Load all state zip codes in parallel
-        const [caResponse, txResponse, azResponse, waResponse] = await Promise.all([
-            fetch('https://raw.githubusercontent.com/OpenDataDE/State-zip-code-GeoJSON/master/ca_california_zip_codes_geo.min.json'),
-            fetch('https://raw.githubusercontent.com/OpenDataDE/State-zip-code-GeoJSON/master/tx_texas_zip_codes_geo.min.json'),
-            fetch('https://raw.githubusercontent.com/OpenDataDE/State-zip-code-GeoJSON/master/az_arizona_zip_codes_geo.min.json'),
-            fetch('https://raw.githubusercontent.com/OpenDataDE/State-zip-code-GeoJSON/master/wa_washington_zip_codes_geo.min.json')
+        const baseUrl = 'https://raw.githubusercontent.com/OpenDataDE/State-zip-code-GeoJSON/master/';
+        const [caResponse, txResponse, azResponse, waResponse, flResponse, coResponse, mnResponse, mdResponse, nmResponse, nvResponse, orResponse] = await Promise.all([
+            fetch(baseUrl + 'ca_california_zip_codes_geo.min.json'),
+            fetch(baseUrl + 'tx_texas_zip_codes_geo.min.json'),
+            fetch(baseUrl + 'az_arizona_zip_codes_geo.min.json'),
+            fetch(baseUrl + 'wa_washington_zip_codes_geo.min.json'),
+            fetch(baseUrl + 'fl_florida_zip_codes_geo.min.json'),
+            fetch(baseUrl + 'co_colorado_zip_codes_geo.min.json'),
+            fetch(baseUrl + 'mn_minnesota_zip_codes_geo.min.json'),
+            fetch(baseUrl + 'md_maryland_zip_codes_geo.min.json'),
+            fetch(baseUrl + 'nm_new_mexico_zip_codes_geo.min.json'),
+            fetch(baseUrl + 'nv_nevada_zip_codes_geo.min.json'),
+            fetch(baseUrl + 'or_oregon_zip_codes_geo.min.json')
         ]);
 
         if (!caResponse.ok) {
@@ -530,11 +592,18 @@ async function loadZipCodeBoundaries() {
             throw new Error('Failed to fetch Texas zip code data');
         }
 
-        const [caGeojson, txGeojson, azGeojson, waGeojson] = await Promise.all([
+        const [caGeojson, txGeojson, azGeojson, waGeojson, flGeojson, coGeojson, mnGeojson, mdGeojson, nmGeojson, nvGeojson, orGeojson] = await Promise.all([
             caResponse.json(),
             txResponse.json(),
             azResponse.ok ? azResponse.json() : { features: [] },
-            waResponse.ok ? waResponse.json() : { features: [] }
+            waResponse.ok ? waResponse.json() : { features: [] },
+            flResponse.ok ? flResponse.json() : { features: [] },
+            coResponse.ok ? coResponse.json() : { features: [] },
+            mnResponse.ok ? mnResponse.json() : { features: [] },
+            mdResponse.ok ? mdResponse.json() : { features: [] },
+            nmResponse.ok ? nmResponse.json() : { features: [] },
+            nvResponse.ok ? nvResponse.json() : { features: [] },
+            orResponse.ok ? orResponse.json() : { features: [] }
         ]);
 
         // Filter zip codes for each region
@@ -543,11 +612,18 @@ async function loadZipCodeBoundaries() {
         const dfwZips = filterDFWZips(txGeojson);
         const arizonaZips = filterArizonaZips(azGeojson);
         const seattleZips = filterSeattleZips(waGeojson);
+        const floridaZips = filterFloridaZips(flGeojson);
+        const coloradoZips = filterColoradoZips(coGeojson);
+        const minnesotaZips = filterMinnesotaZips(mnGeojson);
+        const marylandZips = filterMarylandZips(mdGeojson);
+        const newMexicoZips = filterNewMexicoZips(nmGeojson);
+        const nevadaZips = filterNevadaZips(nvGeojson);
+        const oregonZips = filterOregonZips(orGeojson);
 
-        // Combine all regions (deduplicate CA zips that may appear in both SoCal and NorCal bounding boxes)
+        // Combine all regions (deduplicate zips that may appear in overlapping bounding boxes)
         const seenZips = new Set();
         const allFeatures = [];
-        [...socalZips.features, ...norcalZips.features, ...dfwZips.features, ...arizonaZips.features, ...seattleZips.features].forEach(f => {
+        [...socalZips.features, ...norcalZips.features, ...dfwZips.features, ...arizonaZips.features, ...seattleZips.features, ...floridaZips.features, ...coloradoZips.features, ...minnesotaZips.features, ...marylandZips.features, ...newMexicoZips.features, ...nevadaZips.features, ...oregonZips.features].forEach(f => {
             const zip = f.properties.ZCTA5CE10 || f.properties.zip || f.properties.GEOID10;
             if (!seenZips.has(zip)) {
                 seenZips.add(zip);
@@ -587,7 +663,7 @@ async function loadZipCodeBoundaries() {
         await loadCountyBoundaries();
 
         hideLoading();
-        console.log(`Loaded ${state.zipCodeData.size} zip codes (SoCal: ${socalZips.features.length}, NorCal: ${norcalZips.features.length}, TX: ${dfwZips.features.length}, AZ: ${arizonaZips.features.length}, WA: ${seattleZips.features.length})`);
+        console.log(`Loaded ${state.zipCodeData.size} zip codes (SoCal: ${socalZips.features.length}, NorCal: ${norcalZips.features.length}, TX: ${dfwZips.features.length}, AZ: ${arizonaZips.features.length}, WA: ${seattleZips.features.length}, FL: ${floridaZips.features.length}, CO: ${coloradoZips.features.length}, MN: ${minnesotaZips.features.length}, MD: ${marylandZips.features.length}, NM: ${newMexicoZips.features.length}, NV: ${nevadaZips.features.length}, OR: ${oregonZips.features.length})`);
 
     } catch (error) {
         console.error('Error loading zip code boundaries:', error);
@@ -622,11 +698,10 @@ function filterSoCalZips(geojson) {
 }
 
 function filterNorCalZips(geojson) {
-    // Northern California bounding box: Bay Area through Sacramento
-    // Monterey/Santa Cruz (south) to Sonoma/Sacramento (north), coast to Sierra foothills
+    // Northern California bounding box: Monterey/Santa Cruz through Chico/Butte
     const bounds = {
         minLat: 36.2,
-        maxLat: 39.2,
+        maxLat: 40.2,
         minLng: -123.5,
         maxLng: -120.0
     };
@@ -723,6 +798,60 @@ function filterSeattleZips(geojson) {
         type: 'FeatureCollection',
         features: filteredFeatures
     };
+}
+
+function filterFloridaZips(geojson) {
+    // Central Florida: Fort Myers to Daytona, Tampa to Melbourne
+    const bounds = { minLat: 26.0, maxLat: 29.5, minLng: -83.0, maxLng: -80.0 };
+    return filterByBounds(geojson, bounds);
+}
+
+function filterColoradoZips(geojson) {
+    // Denver metro + Colorado Springs corridor
+    const bounds = { minLat: 38.3, maxLat: 40.5, minLng: -105.8, maxLng: -104.0 };
+    return filterByBounds(geojson, bounds);
+}
+
+function filterMinnesotaZips(geojson) {
+    // Twin Cities metro
+    const bounds = { minLat: 44.4, maxLat: 45.5, minLng: -94.0, maxLng: -92.5 };
+    return filterByBounds(geojson, bounds);
+}
+
+function filterMarylandZips(geojson) {
+    // DC suburbs: PG County + Montgomery + Anne Arundel + Baltimore
+    const bounds = { minLat: 38.5, maxLat: 39.7, minLng: -77.5, maxLng: -76.3 };
+    return filterByBounds(geojson, bounds);
+}
+
+function filterNewMexicoZips(geojson) {
+    // Albuquerque + Santa Fe corridor
+    const bounds = { minLat: 34.3, maxLat: 36.0, minLng: -107.5, maxLng: -105.5 };
+    return filterByBounds(geojson, bounds);
+}
+
+function filterNevadaZips(geojson) {
+    // Las Vegas metro
+    const bounds = { minLat: 35.5, maxLat: 36.6, minLng: -116.0, maxLng: -114.5 };
+    return filterByBounds(geojson, bounds);
+}
+
+function filterOregonZips(geojson) {
+    // Portland metro + Salem
+    const bounds = { minLat: 44.5, maxLat: 46.0, minLng: -123.5, maxLng: -122.0 };
+    return filterByBounds(geojson, bounds);
+}
+
+// Generic bounding box filter helper
+function filterByBounds(geojson, bounds) {
+    const filteredFeatures = geojson.features.filter(feature => {
+        const coords = getCentroid(feature.geometry);
+        if (!coords) return false;
+        const [lng, lat] = coords;
+        return lat >= bounds.minLat && lat <= bounds.maxLat &&
+               lng >= bounds.minLng && lng <= bounds.maxLng;
+    });
+    return { type: 'FeatureCollection', features: filteredFeatures };
 }
 
 function getCentroid(geometry) {
@@ -1333,6 +1462,42 @@ function getEstimatedPopulation(zip) {
         '95742': 28000, '95758': 48000, '95624': 55000, '95757': 50000,
         // Placer / Roseville
         '95648': 42000, '95765': 45000, '95678': 48000, '95661': 40000, '95747': 55000,
+        // Chico / Butte
+        '95926': 40000, '95928': 37000, '95973': 39000, '95966': 28000, '95965': 21000,
+        // Florida - Tampa Bay
+        '33647': 75000, '33511': 62000, '33578': 61000, '33612': 49000, '33614': 47000,
+        '33615': 47000, '33617': 48000, '33610': 47000, '33619': 41000, '33624': 41000,
+        '33710': 34000, '33713': 32000, '33702': 31000, '33756': 32000, '33781': 28000,
+        // Florida - Orlando
+        '32703': 59000, '32822': 67000, '32828': 69000, '32825': 64000, '32818': 59000,
+        '32808': 60000, '32837': 54000, '32824': 58000, '32765': 64000,
+        // Florida - Fort Myers
+        '33914': 46000, '33905': 41000, '33909': 40000, '33904': 34000, '33993': 36000,
+        // Florida - Melbourne/Brevard
+        '32940': 52000, '32907': 49000, '32909': 42000, '32935': 42000,
+        // Florida - Lakeland/Polk
+        '33810': 55000, '33844': 51000, '33880': 43000, '33837': 47000,
+        // Colorado - Denver metro
+        '80013': 73000, '80015': 72000, '80016': 68000, '80504': 63000, '80134': 80000,
+        '80022': 61000, '80020': 54000, '80219': 60000, '80229': 55000, '80233': 48000,
+        '80011': 54000, '80012': 51000,
+        // Colorado - Colorado Springs
+        '80918': 50000, '80916': 41000, '80906': 38000, '80920': 37000,
+        // Minnesota - Twin Cities
+        '55044': 65000, '55124': 56000, '55303': 53000, '55304': 50000, '55379': 50000,
+        '55330': 46000, '55106': 57000, '55104': 46000, '55449': 34000,
+        '55420': 24000, '55423': 37000, '55416': 35000,
+        // Maryland - DC suburbs
+        '20906': 71000, '20878': 66000, '20874': 63000, '20904': 59000, '20744': 54000,
+        '20772': 54000, '20774': 52000, '20783': 50000, '20850': 50000, '20854': 50000,
+        // Nevada - Las Vegas
+        '89108': 73000, '89031': 77000, '89110': 69000, '89115': 68000, '89121': 68000,
+        '89148': 64000, '89052': 61000, '89117': 58000, '89123': 58000,
+        // New Mexico - Albuquerque
+        '87121': 76000, '87114': 70000, '87120': 66000, '87124': 58000, '87111': 57000,
+        // Oregon - Portland
+        '97229': 76000, '97301': 58000, '97045': 58000, '97124': 54000, '97206': 50000,
+        '97223': 51000, '97007': 48000, '97006': 46000,
         // Washington State - expanded coverage (Census/ACS estimates)
         // Kitsap Peninsula
         '98110': 24000, '98310': 22000, '98311': 28000, '98312': 32000,
@@ -1533,6 +1698,68 @@ function getEstimatedPopulation(zip) {
         else if (zipPrefix === '961') {
             population = Math.floor(3000 + rand * 8000);
         }
+        // Chico/Butte
+        else if (zipPrefix === '959') {
+            population = Math.floor(15000 + rand * 25000);
+        }
+        // Florida
+        else if (zipPrefix === '336') {
+            population = Math.floor(25000 + rand * 30000); // Tampa
+        } else if (zipPrefix === '337') {
+            population = Math.floor(20000 + rand * 15000); // St Petersburg/Pinellas
+        } else if (zipPrefix === '328') {
+            population = Math.floor(30000 + rand * 40000); // Orlando
+        } else if (['338'].includes(zipPrefix)) {
+            population = Math.floor(25000 + rand * 25000); // Lakeland/Polk
+        } else if (['339'].includes(zipPrefix)) {
+            population = Math.floor(22000 + rand * 22000); // Fort Myers/Lee
+        } else if (['327'].includes(zipPrefix)) {
+            population = Math.floor(25000 + rand * 30000); // Seminole/Volusia
+        } else if (['329'].includes(zipPrefix)) {
+            population = Math.floor(22000 + rand * 25000); // Melbourne/Brevard
+        } else if (['341'].includes(zipPrefix)) {
+            population = Math.floor(20000 + rand * 20000); // Naples/Collier
+        } else if (['342', '346'].includes(zipPrefix)) {
+            population = Math.floor(20000 + rand * 25000); // Sarasota/Pasco
+        } else if (['321', '347'].includes(zipPrefix)) {
+            population = Math.floor(15000 + rand * 25000); // Daytona/Osceola
+        }
+        // Colorado
+        else if (['800', '802'].includes(zipPrefix)) {
+            population = Math.floor(25000 + rand * 35000); // Denver metro
+        } else if (['801', '803', '804', '805'].includes(zipPrefix)) {
+            population = Math.floor(18000 + rand * 25000); // Denver suburbs
+        } else if (['809'].includes(zipPrefix)) {
+            population = Math.floor(22000 + rand * 25000); // Colorado Springs
+        } else if (['808'].includes(zipPrefix)) {
+            population = Math.floor(2000 + rand * 5000); // Pueblo/rural
+        }
+        // Minnesota
+        else if (['554', '551'].includes(zipPrefix)) {
+            population = Math.floor(20000 + rand * 22000); // Minneapolis/St Paul
+        } else if (['553', '550'].includes(zipPrefix)) {
+            population = Math.floor(15000 + rand * 25000); // Twin Cities suburbs
+        }
+        // Maryland
+        else if (['207', '208', '209'].includes(zipPrefix)) {
+            population = Math.floor(28000 + rand * 35000); // DC suburbs
+        } else if (['210', '211'].includes(zipPrefix)) {
+            population = Math.floor(20000 + rand * 25000); // Baltimore area
+        }
+        // Nevada
+        else if (['890', '891'].includes(zipPrefix)) {
+            population = Math.floor(35000 + rand * 35000); // Las Vegas
+        }
+        // New Mexico
+        else if (['871'].includes(zipPrefix)) {
+            population = Math.floor(25000 + rand * 40000); // Albuquerque
+        }
+        // Oregon
+        else if (['970', '972'].includes(zipPrefix)) {
+            population = Math.floor(25000 + rand * 30000); // Portland
+        } else if (['971', '973', '974'].includes(zipPrefix)) {
+            population = Math.floor(12000 + rand * 25000); // Salem/Eugene
+        }
         // Default estimate
         else {
             population = Math.floor(12000 + rand * 18000);
@@ -1569,6 +1796,13 @@ function getCountyDeathStats(zip, countyDisplay) {
     else if (prefix >= '75' && prefix <= '79') stateCode = 'TX';
     else if (prefix >= '85' && prefix <= '86') stateCode = 'AZ';
     else if (prefix >= '98' && prefix <= '99') stateCode = 'WA';
+    else if (prefix >= '32' && prefix <= '34') stateCode = 'FL';
+    else if (prefix >= '80' && prefix <= '81') stateCode = 'CO';
+    else if (prefix >= '55' && prefix <= '56') stateCode = 'MN';
+    else if (prefix >= '20' && prefix <= '21') stateCode = 'MD';
+    else if (prefix === '87') stateCode = 'NM';
+    else if (prefix === '88' || prefix === '89') stateCode = 'NV';
+    else if (prefix >= '97' && prefix <= '97') stateCode = 'OR';
 
     if (!stateCode) return null;
 
@@ -1610,6 +1844,13 @@ function getZipDeathEstimate(zip, population) {
     else if (prefix >= '75' && prefix <= '79') stateCode = 'TX';
     else if (prefix >= '85' && prefix <= '86') stateCode = 'AZ';
     else if (prefix >= '98' && prefix <= '99') stateCode = 'WA';
+    else if (prefix >= '32' && prefix <= '34') stateCode = 'FL';
+    else if (prefix >= '80' && prefix <= '81') stateCode = 'CO';
+    else if (prefix >= '55' && prefix <= '56') stateCode = 'MN';
+    else if (prefix >= '20' && prefix <= '21') stateCode = 'MD';
+    else if (prefix === '87') stateCode = 'NM';
+    else if (prefix === '88' || prefix === '89') stateCode = 'NV';
+    else if (prefix >= '97' && prefix <= '97') stateCode = 'OR';
 
     if (!stateCode) return null;
 
@@ -2068,6 +2309,42 @@ function addCrematoryMarker(crematory) {
         `);
 
     marker.on('click', () => highlightCrematoryZips(crematory));
+
+    state.crematoryMarkers.push(marker);
+}
+
+function addFPGCrematoryMarker(crem) {
+    if (!crem.lat || !crem.lng) return;
+
+    const icon = L.divIcon({
+        className: 'crematory-marker-icon fpg-marker',
+        html: `<div style="
+            background: #E53935;
+            border: 3px solid #B71C1C;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        "><i class="fas fa-fire" style="font-size: 10px; color: #fff;"></i></div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+    });
+
+    const marker = L.marker([crem.lat, crem.lng], { icon })
+        .addTo(state.map)
+        .bindPopup(`
+            <div class="popup-header" style="color: #E53935;">${crem.name}</div>
+            <div class="popup-row">
+                <span class="popup-label">Partner:</span>
+                <span class="popup-value">FPG / Monarch</span>
+            </div>
+            <div class="popup-row">
+                <span class="popup-label">Address:</span>
+                <span class="popup-value">${crem.address}</span>
+            </div>
+        `);
 
     state.crematoryMarkers.push(marker);
 }
