@@ -87,6 +87,13 @@ const CONFIG = {
         'Brazos'
     ],
 
+    // Greater Houston Metro (13-county area)
+    houstonCounties: [
+        'Harris', 'Fort Bend', 'Montgomery', 'Brazoria', 'Galveston',
+        'Liberty', 'Chambers', 'Waller', 'Austin',
+        'San Jacinto', 'Wharton', 'Matagorda', 'Colorado'
+    ],
+
     // Arizona counties (Phoenix + Tucson coverage area)
     arizonaCounties: [
         'Maricopa',
@@ -489,7 +496,7 @@ async function loadCountyBoundaries() {
 
             // State FIPS codes
             const stateFilters = {
-                '48': CONFIG.texasCounties,        // Texas
+                '48': [...CONFIG.texasCounties, ...CONFIG.houstonCounties],  // Texas (DFW + Houston)
                 '04': CONFIG.arizonaCounties,       // Arizona
                 '53': CONFIG.washingtonCounties,    // Washington
                 '12': CONFIG.floridaCounties,       // Florida
@@ -610,6 +617,7 @@ async function loadZipCodeBoundaries() {
         const socalZips = filterSoCalZips(caGeojson);
         const norcalZips = filterNorCalZips(caGeojson);
         const dfwZips = filterDFWZips(txGeojson);
+        const houstonZips = filterHoustonZips(txGeojson);
         const arizonaZips = filterArizonaZips(azGeojson);
         const seattleZips = filterSeattleZips(waGeojson);
         const floridaZips = filterFloridaZips(flGeojson);
@@ -623,7 +631,7 @@ async function loadZipCodeBoundaries() {
         // Combine all regions (deduplicate zips that may appear in overlapping bounding boxes)
         const seenZips = new Set();
         const allFeatures = [];
-        [...socalZips.features, ...norcalZips.features, ...dfwZips.features, ...arizonaZips.features, ...seattleZips.features, ...floridaZips.features, ...coloradoZips.features, ...minnesotaZips.features, ...marylandZips.features, ...newMexicoZips.features, ...nevadaZips.features, ...oregonZips.features].forEach(f => {
+        [...socalZips.features, ...norcalZips.features, ...dfwZips.features, ...houstonZips.features, ...arizonaZips.features, ...seattleZips.features, ...floridaZips.features, ...coloradoZips.features, ...minnesotaZips.features, ...marylandZips.features, ...newMexicoZips.features, ...nevadaZips.features, ...oregonZips.features].forEach(f => {
             const zip = f.properties.ZCTA5CE10 || f.properties.zip || f.properties.GEOID10;
             if (!seenZips.has(zip)) {
                 seenZips.add(zip);
@@ -663,7 +671,7 @@ async function loadZipCodeBoundaries() {
         await loadCountyBoundaries();
 
         hideLoading();
-        console.log(`Loaded ${state.zipCodeData.size} zip codes (SoCal: ${socalZips.features.length}, NorCal: ${norcalZips.features.length}, TX: ${dfwZips.features.length}, AZ: ${arizonaZips.features.length}, WA: ${seattleZips.features.length}, FL: ${floridaZips.features.length}, CO: ${coloradoZips.features.length}, MN: ${minnesotaZips.features.length}, MD: ${marylandZips.features.length}, NM: ${newMexicoZips.features.length}, NV: ${nevadaZips.features.length}, OR: ${oregonZips.features.length})`);
+        console.log(`Loaded ${state.zipCodeData.size} zip codes (SoCal: ${socalZips.features.length}, NorCal: ${norcalZips.features.length}, DFW: ${dfwZips.features.length}, Houston: ${houstonZips.features.length}, AZ: ${arizonaZips.features.length}, WA: ${seattleZips.features.length}, FL: ${floridaZips.features.length}, CO: ${coloradoZips.features.length}, MN: ${minnesotaZips.features.length}, MD: ${marylandZips.features.length}, NM: ${newMexicoZips.features.length}, NV: ${nevadaZips.features.length}, OR: ${oregonZips.features.length})`);
 
     } catch (error) {
         console.error('Error loading zip code boundaries:', error);
@@ -839,6 +847,12 @@ function filterNevadaZips(geojson) {
 function filterOregonZips(geojson) {
     // Portland metro + Salem
     const bounds = { minLat: 44.5, maxLat: 46.0, minLng: -123.5, maxLng: -122.0 };
+    return filterByBounds(geojson, bounds);
+}
+
+function filterHoustonZips(geojson) {
+    // Greater Houston bounding box (13-county metro)
+    const bounds = { minLat: 28.4, maxLat: 30.95, minLng: -96.85, maxLng: -94.1 };
     return filterByBounds(geojson, bounds);
 }
 
@@ -1538,7 +1552,78 @@ function getEstimatedPopulation(zip) {
         '98801': 35000, '98826': 4000, '98847': 2000,
         // Yakima / Kittitas
         '98922': 4000, '98925': 1500, '98926': 22000, '98929': 2000,
-        '98937': 3000, '98940': 500, '98941': 2000, '98943': 1000, '98946': 800
+        '98937': 3000, '98940': 500, '98941': 2000, '98943': 1000, '98946': 800,
+        // Houston Metro
+        '77494': 140157, '77449': 130028, '77433': 116550, '77084': 110217,
+        '77573': 98109, '77429': 96334, '77479': 92221, '77584': 91065,
+        '77407': 88319, '77379': 85190, '77459': 84221, '77346': 79538,
+        '77083': 73230, '77375': 72311, '77036': 71770, '77450': 71906,
+        '77493': 71484, '77386': 69980, '77406': 69918, '77469': 69826,
+        '77095': 69767, '77373': 69739, '77521': 69038, '77396': 61735,
+        '77077': 60098, '77082': 59412, '77015': 58415, '77044': 58347,
+        '77070': 58229, '77089': 57741, '77072': 57108, '77088': 57047,
+        '77546': 54789, '77388': 53425, '77498': 52806, '77583': 52747,
+        '77511': 51892, '77581': 51332, '77040': 50977, '77081': 50129,
+        '77099': 50064, '77064': 49591, '77539': 49375, '77338': 48031,
+        '77007': 47808, '77080': 47638, '77057': 46569, '77365': 46418,
+        '77093': 46407, '77073': 46084, '77389': 45701, '77055': 45435,
+        '77060': 45340, '77471': 45325, '77354': 44900, '77339': 44538,
+        '77304': 44225, '77327': 42685, '77063': 42690, '77377': 41680,
+        '77008': 41645, '77441': 41324, '77075': 40626, '77049': 40418,
+        '77090': 40110, '77535': 39504, '77489': 39292, '77066': 39311,
+        '77065': 38926, '77382': 38986, '77042': 38721, '77074': 38660,
+        '77571': 38543, '77024': 38288, '77301': 37769, '77357': 37592,
+        '77079': 37276, '77092': 36938, '77034': 36456, '77502': 36371,
+        '77520': 36355, '77381': 36139, '77014': 36119, '77035': 36019,
+        '77004': 35997, '77009': 35769, '77506': 35114, '77096': 35032,
+        '77047': 34987, '77316': 34694, '77515': 34088, '77087': 34347,
+        '77477': 33752, '77532': 33780, '77045': 33563, '77041': 33349,
+        '77536': 33174, '77355': 32847, '77356': 32583, '77038': 32637,
+        '77590': 31642, '77530': 31527, '77380': 31369, '77076': 31222,
+        '77018': 31031, '77067': 30491, '77566': 30246, '77578': 30210,
+        '77523': 30186, '77053': 30198, '77016': 29841, '77025': 29715,
+        '77017': 29640, '77033': 29154, '77043': 29048, '77303': 28854,
+        '77005': 28874, '77091': 28728, '77086': 28653, '77054': 28272,
+        '77385': 28156, '77345': 27917, '77039': 27862, '77071': 27056,
+        '77384': 26781, '77545': 26236, '77021': 26153, '77598': 26110,
+        '77447': 25231, '77022': 25805, '77504': 25779, '77062': 25523,
+        '77006': 24892, '77023': 24281, '77061': 24004, '77503': 23866,
+        '77586': 23807, '77550': 23489, '77583': 52747, '77019': 23708, '77568': 23083,
+        '77020': 23686, '77505': 23174, '77478': 23182, '77056': 22877,
+        '77026': 21981, '77551': 21696, '77302': 21546, '77002': 21015,
+        '77048': 21151, '77069': 20608, '77027': 20317, '77318': 20792,
+        '77037': 19004, '77051': 19795, '77028': 19109, '77059': 18767,
+        '77423': 18767, '77058': 17850, '77306': 18086, '77098': 17210,
+        '77401': 17213, '77328': 17208, '77575': 16613, '77587': 16033,
+        '77011': 14940, '77541': 16996, '77531': 16406, '77445': 16142,
+        '77029': 16154, '77012': 16286, '77085': 16513, '77474': 15146,
+        '77031': 15179, '77032': 12403, '77078': 14247, '77030': 13380,
+        '77068': 13189, '77046': 1793, '77010': 718, '77204': 4579,
+        '77336': 14342, '77372': 14367, '77362': 8017, '77378': 17629,
+        '77414': 24334, '77437': 18238, '77488': 14548, '77418': 10171,
+        '77484': 14348, '77446': 5780, '77422': 14547, '77480': 7626,
+        '77486': 7195, '77534': 3403, '77577': 1562, '77514': 5480,
+        '77665': 7511, '77331': 7556, '77371': 7800, '77364': 2178,
+        '77359': 683, '77510': 14155, '77517': 5529, '77518': 9541,
+        '77563': 9955, '77565': 6943, '77591': 18294, '77547': 9217,
+        '77562': 8914, '77465': 7681, '77434': 3970,
+        '78934': 6731, '78962': 5236, '77435': 4812, '77461': 12365,
+        '77094': 10395, '77013': 18259, '77050': 6566, '77003': 10164,
+        '77554': 10414, '77617': 44, '77623': 585, '77650': 2322,
+        '77369': 738, '77533': 1016, '77538': 917, '77561': 36,
+        '77564': 1806, '77582': 135, '77368': 0, '77560': 1238,
+        '77580': 0, '77597': 623, '77661': 102, '77466': 220,
+        '77473': 49, '77485': 4378, '78931': 185, '78944': 720,
+        '78950': 2300, '77420': 2236, '77432': 0, '77436': 28,
+        '77443': 0, '77448': 171, '77453': 91, '77454': 178,
+        '77455': 1629, '77467': 80, '77415': 63, '77419': 609,
+        '77428': 151, '77440': 45, '77456': 1394, '77457': 353,
+        '77458': 0, '77468': 0, '77482': 2050, '77483': 257,
+        '77412': 6, '77442': 1123, '77460': 76, '77470': 414,
+        '77475': 431, '78933': 1395, '78935': 734, '78943': 886,
+        '78951': 0, '77417': 3920, '77444': 911, '77451': 515,
+        '77464': 407, '77476': 423, '77481': 78, '77430': 1664,
+        '77431': 250, '77555': 2, '77873': 1383, '77507': 567
     };
 
     let population;
@@ -1607,6 +1692,22 @@ function getEstimatedPopulation(zip) {
         // Rural Texas
         else if (['754', '755', '756', '757', '758', '759'].includes(zipPrefix)) {
             population = Math.floor(3000 + rand * 12000);
+        }
+        // Houston Metro - Harris County core
+        else if (zipPrefix === '770' || zipPrefix === '771' || zipPrefix === '772') {
+            population = Math.floor(28000 + rand * 15000);
+        }
+        // Houston Metro - Montgomery/North Harris
+        else if (zipPrefix === '773') {
+            population = Math.floor(25000 + rand * 12000);
+        }
+        // Houston Metro - Fort Bend/West Harris
+        else if (zipPrefix === '774') {
+            population = Math.floor(22000 + rand * 10000);
+        }
+        // Houston Metro - Galveston/Brazoria/SE Harris
+        else if (zipPrefix === '775') {
+            population = Math.floor(18000 + rand * 12000);
         }
         // Arizona estimates
         // Phoenix urban core (850xx)
