@@ -157,9 +157,7 @@ const CONFIG = {
         'Kittitas',
         'Cowlitz',
         'Skamania',
-        'Pacific',
-        // Portland metro, Washington side
-        'Clark'
+        'Pacific'
     ],
 
     // Florida counties (Central FL crematory coverage)
@@ -199,7 +197,7 @@ const CONFIG = {
 
     // Oregon counties (Portland metro)
     oregonCounties: [
-        'Washington', 'Clackamas', 'Multnomah', 'Marion', 'Yamhill', 'Columbia'
+        'Washington', 'Clackamas', 'Multnomah', 'Marion', 'Yamhill'
     ],
 
     // California - Chico area (added to NorCal)
@@ -629,12 +627,11 @@ async function loadZipCodeBoundaries() {
         const newMexicoZips = filterNewMexicoZips(nmGeojson);
         const nevadaZips = filterNevadaZips(nvGeojson);
         const oregonZips = filterOregonZips(orGeojson);
-        const vancouverWaZips = filterVancouverWaZips(waGeojson);
 
         // Combine all regions (deduplicate zips that may appear in overlapping bounding boxes)
         const seenZips = new Set();
         const allFeatures = [];
-        [...socalZips.features, ...norcalZips.features, ...dfwZips.features, ...houstonZips.features, ...arizonaZips.features, ...seattleZips.features, ...floridaZips.features, ...coloradoZips.features, ...minnesotaZips.features, ...marylandZips.features, ...newMexicoZips.features, ...nevadaZips.features, ...oregonZips.features, ...vancouverWaZips.features].forEach(f => {
+        [...socalZips.features, ...norcalZips.features, ...dfwZips.features, ...houstonZips.features, ...arizonaZips.features, ...seattleZips.features, ...floridaZips.features, ...coloradoZips.features, ...minnesotaZips.features, ...marylandZips.features, ...newMexicoZips.features, ...nevadaZips.features, ...oregonZips.features].forEach(f => {
             const zip = f.properties.ZCTA5CE10 || f.properties.zip || f.properties.GEOID10;
             if (!seenZips.has(zip)) {
                 seenZips.add(zip);
@@ -674,7 +671,7 @@ async function loadZipCodeBoundaries() {
         await loadCountyBoundaries();
 
         hideLoading();
-        console.log(`Loaded ${state.zipCodeData.size} zip codes (SoCal: ${socalZips.features.length}, NorCal: ${norcalZips.features.length}, DFW: ${dfwZips.features.length}, Houston: ${houstonZips.features.length}, AZ: ${arizonaZips.features.length}, WA: ${seattleZips.features.length}, FL: ${floridaZips.features.length}, CO: ${coloradoZips.features.length}, MN: ${minnesotaZips.features.length}, MD: ${marylandZips.features.length}, NM: ${newMexicoZips.features.length}, NV: ${nevadaZips.features.length}, OR: ${oregonZips.features.length}, Vancouver WA: ${vancouverWaZips.features.length})`);
+        console.log(`Loaded ${state.zipCodeData.size} zip codes (SoCal: ${socalZips.features.length}, NorCal: ${norcalZips.features.length}, DFW: ${dfwZips.features.length}, Houston: ${houstonZips.features.length}, AZ: ${arizonaZips.features.length}, WA: ${seattleZips.features.length}, FL: ${floridaZips.features.length}, CO: ${coloradoZips.features.length}, MN: ${minnesotaZips.features.length}, MD: ${marylandZips.features.length}, NM: ${newMexicoZips.features.length}, NV: ${nevadaZips.features.length}, OR: ${oregonZips.features.length})`);
 
     } catch (error) {
         console.error('Error loading zip code boundaries:', error);
@@ -850,13 +847,6 @@ function filterNevadaZips(geojson) {
 function filterOregonZips(geojson) {
     // Portland metro + Salem
     const bounds = { minLat: 44.5, maxLat: 46.0, minLng: -123.5, maxLng: -122.0 };
-    return filterByBounds(geojson, bounds);
-}
-
-function filterVancouverWaZips(geojson) {
-    // Portland metro, Washington side (Clark County plus the Cowlitz/Skamania fringe).
-    // The Seattle bounding box stops at 46.0 lat, so these zips load from here instead.
-    const bounds = { minLat: 45.4, maxLat: 46.1, minLng: -123.2, maxLng: -121.6 };
     return filterByBounds(geojson, bounds);
 }
 
@@ -2427,21 +2417,14 @@ function addCrematoryMarker(crematory) {
 function addFPGCrematoryMarker(crem) {
     if (!crem.lat || !crem.lng) return;
 
-    // Partners default to active; set active: false in FPG_CREMATORY_LOCATIONS
-    // for a site we are not sending cases to.
-    const isActive = crem.active !== false;
-    const fill = isActive ? '#E53935' : '#9E9E9E';
-    const stroke = isActive ? '#B71C1C' : '#616161';
-
     const icon = L.divIcon({
-        className: `crematory-marker-icon fpg-marker${isActive ? '' : ' inactive-marker'}`,
+        className: 'crematory-marker-icon fpg-marker',
         html: `<div style="
-            background: ${fill};
-            border: 3px solid ${stroke};
+            background: #E53935;
+            border: 3px solid #B71C1C;
             border-radius: 50%;
             width: 20px;
             height: 20px;
-            opacity: ${isActive ? 1 : 0.65};
             display: flex;
             align-items: center;
             justify-content: center;
@@ -2453,13 +2436,7 @@ function addFPGCrematoryMarker(crem) {
     const marker = L.marker([crem.lat, crem.lng], { icon })
         .addTo(state.map)
         .bindPopup(`
-            <div class="popup-header" style="color: ${fill};">${crem.name}</div>
-            <div class="popup-row">
-                <span class="popup-label">Status:</span>
-                <span class="popup-value" style="color: ${isActive ? '#2E7D32' : '#B71C1C'}; font-weight: 600;">
-                    ${isActive ? 'Active partner' : 'Not active'}
-                </span>
-            </div>
+            <div class="popup-header" style="color: #E53935;">${crem.name}</div>
             <div class="popup-row">
                 <span class="popup-label">Partner:</span>
                 <span class="popup-value">FPG / Monarch</span>
