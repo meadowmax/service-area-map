@@ -1112,6 +1112,10 @@ function createPopupContent(zip, hasRealDistances = false) {
         html += `
         <div class="popup-section" style="margin-top:8px;padding-top:8px;border-top:1px solid #eee;">
             <div style="font-size:0.75rem;color:#999;margin-bottom:4px;">${countyStats.countyLabel} County</div>
+            ${countyStats.population ? `<div class="popup-row">
+                <span class="popup-label">County Population:</span>
+                <span class="popup-value">${countyStats.population.toLocaleString()}</span>
+            </div>` : ''}
             <div class="popup-row">
                 <span class="popup-label">Deaths/mo:</span>
                 <span class="popup-value">${monthlyDeaths.toLocaleString()}</span>
@@ -1252,6 +1256,71 @@ function createPopupContent(zip, hasRealDistances = false) {
         }
     }
 
+    html += transportHubSection(zip, zipData);
+
+    return html;
+}
+
+// Transport hubs shown for zips within this straight-line radius (miles)
+const TRANSPORT_HUB_RADIUS_MI = 120;
+
+function getZipCentroid(zip) {
+    let centroid = null;
+    if (state.zipCodeLayer) {
+        state.zipCodeLayer.eachLayer(layer => {
+            if (centroid) return;
+            const layerZip = layer.feature.properties.ZCTA5CE10 ||
+                             layer.feature.properties.zip ||
+                             layer.feature.properties.GEOID10;
+            if (layerZip === zip) {
+                const c = layer.getBounds().getCenter();
+                centroid = { lat: c.lat, lng: c.lng };
+            }
+        });
+    }
+    return centroid;
+}
+
+// Estimated (hover) or OSRM (click) distance from a zip to each nearby transport hub
+function getTransportHubDistances(zip, zipData) {
+    if (typeof TRANSPORT_LOCATIONS === 'undefined') return [];
+    const c = getZipCentroid(zip);
+    if (!c) return [];
+    const real = (zipData && zipData.transportDistances) || {};
+    return TRANSPORT_LOCATIONS
+        .map(hub => {
+            const straight = calculateHaversineDistance(c.lat, c.lng, hub.lat, hub.lng);
+            if (straight > TRANSPORT_HUB_RADIUS_MI) return null;
+            if (real[hub.name]) {
+                return { name: hub.name, address: hub.address, distance: real[hub.name].distance, driveTime: real[hub.name].duration, isRealDistance: true };
+            }
+            const est = straight * CONFIG.drivingDistanceMultiplier;
+            return { name: hub.name, address: hub.address, distance: est, driveTime: Math.round((est / 35) * 60), isRealDistance: false };
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.distance - b.distance);
+}
+
+function transportHubSection(zip, zipData) {
+    const hubs = getTransportHubDistances(zip, zipData);
+    if (hubs.length === 0) return '';
+    let html = `
+        <div class="popup-section" style="background: #E3F2FD; padding: 8px; border-radius: 4px; margin-top: 8px;">
+            <h4 style="color: #1565C0; margin-bottom: 6px;">Transport Hub</h4>
+    `;
+    hubs.forEach(h => {
+        html += `
+            <div class="crematory-distance">
+                <div class="name" style="font-weight: 600;">${h.name}</div>
+                <div class="details">
+                    ${h.isRealDistance ? '🚗' : '📏'} ${h.isRealDistance ? '' : '~'}${h.distance.toFixed(1)} mi • ${h.isRealDistance ? '' : '~'}${h.driveTime} min
+                    ${h.isRealDistance ? ' <span style="color: #4CAF50; font-size: 0.7rem;">(actual)</span>' : ''}
+                </div>
+                <div class="details" style="font-size: 0.75rem; color: #888;">${h.address}</div>
+            </div>
+        `;
+    });
+    html += '</div>';
     return html;
 }
 
@@ -1928,6 +1997,7 @@ function getCountyDeathStats(zip, countyDisplay) {
         deaths: countyData.deaths,
         cremations: annualCremations,
         cremationRate: countyData.cremationRate,
+        population: countyData.population,
         countyLabel: county,
         stateCode: stateCode
     };
@@ -2679,6 +2749,19 @@ async function calculateDrivingDistanceForZip(zip) {
 async function fetchRealDrivingDistances(zip) {
     const zipData = state.zipCodeData.get(zip);
     if (!zipData) return;
+
+    if (typeof TRANSPORT_LOCATIONS !== 'undefined') {
+        const c = getZipCentroid(zip);
+        if (c) {
+            zipData.transportDistances = zipData.transportDistances || {};
+            for (const hub of TRANSPORT_LOCATIONS) {
+                if (zipData.transportDistances[hub.name]) continue;
+                if (calculateHaversineDistance(c.lat, c.lng, hub.lat, hub.lng) > TRANSPORT_HUB_RADIUS_MI) continue;
+                const r = await getOSRMDrivingDistance(c.lat, c.lng, hub.lat, hub.lng);
+                if (r) zipData.transportDistances[hub.name] = r;
+            }
+        }
+    }
 
     // Get zip centroid
     let zipLat, zipLng;
