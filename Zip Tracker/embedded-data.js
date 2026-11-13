@@ -375,7 +375,19 @@ const CREMATORY_LOCATIONS = [
         address: "17819 NE Riverside Parkway, Suite A, Portland, OR 97230",
         lat: 45.5545,
         lng: -122.4806
+    },
+    {
+        name: "Irvington Memorial",
+        address: "41001 Chapel Way, Fremont, CA 94538",
+        lat: 37.5318,
+        lng: -121.9635
     }
+];
+
+// Transport and storage partners (removals, holding, shuttle to the crematory)
+const TRANSPORT_LOCATIONS = [
+    // Salida town center (OSM and Zippopotam agree within 0.003)
+    { name: "NorCal Transport (Salida)", address: "Salida, CA 95368", lat: 37.7058, lng: -121.0849 }
 ];
 
 const FPG_CREMATORY_LOCATIONS = [
@@ -388,9 +400,6 @@ const FPG_CREMATORY_LOCATIONS = [
     { name: "Monarch - Melbourne", address: "781 N Drive, Melbourne, FL 32934", lat: 28.0885, lng: -80.6234 },
     { name: "AZ Mortuary Response", address: "9250 Ranchero Ln, Mohave Valley, AZ 86440", lat: 34.9333, lng: -114.5889 },
     { name: "Chico Crematory", address: "881 Mangrove Ave, Chico, CA 95926", lat: 39.7285, lng: -121.8375 },
-    { name: "Monarch - Bay Area", address: "2449 Station Dr, Stockton, CA 95215", lat: 37.9343, lng: -121.2856 },
-    { name: "Monarch - Sacramento", address: "8366 Rovana Cir, Sacramento, CA 95828", lat: 38.5018, lng: -121.4157 },
-    { name: "Bay Area Cremation Society", address: "1189b Oddstad Dr, Redwood City, CA 94063", lat: 37.4660, lng: -122.2559 },
     { name: "All Mortuary Denver", address: "1338 S Jason St, Denver, CO 80223", lat: 39.6878, lng: -105.0059 },
     { name: "Aspen Mortuaries", address: "1350 Simms St, Lakewood, CO 80228", lat: 39.7014, lng: -105.1556 },
     { name: "El Dorado Crematory", address: "3115 E Platte Ave, Colorado Springs, CO 80909", lat: 38.8569, lng: -104.7858 },
@@ -2484,6 +2493,157 @@ const SERVICE_AREA_DATA = {
         "77868": ["North Park Crematory"],
         "77873": ["North Park Crematory"]
     },
+    // NorCal: Irvington Memorial (Fremont), East Bay + Central Valley
+    "NorCal": {
+        "94501": ["Irvington Memorial"],
+        "94502": ["Irvington Memorial"],
+        "94536": ["Irvington Memorial"],
+        "94538": ["Irvington Memorial"],
+        "94539": ["Irvington Memorial"],
+        "94541": ["Irvington Memorial"],
+        "94542": ["Irvington Memorial"],
+        "94544": ["Irvington Memorial"],
+        "94545": ["Irvington Memorial"],
+        "94546": ["Irvington Memorial"],
+        "94550": ["Irvington Memorial"],
+        "94552": ["Irvington Memorial"],
+        "94555": ["Irvington Memorial"],
+        "94560": ["Irvington Memorial"],
+        "94566": ["Irvington Memorial"],
+        "94568": ["Irvington Memorial"],
+        "94577": ["Irvington Memorial"],
+        "94578": ["Irvington Memorial"],
+        "94579": ["Irvington Memorial"],
+        "94580": ["Irvington Memorial"],
+        "94586": ["Irvington Memorial"],
+        "94587": ["Irvington Memorial"],
+        "94588": ["Irvington Memorial"],
+        "94601": ["Irvington Memorial"],
+        "94602": ["Irvington Memorial"],
+        "94603": ["Irvington Memorial"],
+        "94605": ["Irvington Memorial"],
+        "94606": ["Irvington Memorial"],
+        "94607": ["Irvington Memorial"],
+        "94608": ["Irvington Memorial"],
+        "94609": ["Irvington Memorial"],
+        "94610": ["Irvington Memorial"],
+        "94611": ["Irvington Memorial"],
+        "94612": ["Irvington Memorial"],
+        "94613": ["Irvington Memorial"],
+        "94618": ["Irvington Memorial"],
+        "94619": ["Irvington Memorial"],
+        "94621": ["Irvington Memorial"],
+        "94702": ["Irvington Memorial"],
+        "94703": ["Irvington Memorial"],
+        "94704": ["Irvington Memorial"],
+        "94705": ["Irvington Memorial"],
+        "94706": ["Irvington Memorial"],
+        "94707": ["Irvington Memorial"],
+        "94708": ["Irvington Memorial"],
+        "94709": ["Irvington Memorial"],
+        "94710": ["Irvington Memorial"],
+        "94720": ["Irvington Memorial"],
+        "95391": ["Irvington Memorial"],
+        "94505": ["Irvington Memorial"],
+        "94506": ["Irvington Memorial"],
+        "94507": ["Irvington Memorial"],
+        "94509": ["Irvington Memorial"],
+        "94511": ["Irvington Memorial"],
+        "94513": ["Irvington Memorial"],
+        "94514": ["Irvington Memorial"],
+        "94516": ["Irvington Memorial"],
+        "94517": ["Irvington Memorial"],
+        "94518": ["Irvington Memorial"],
+        "94519": ["Irvington Memorial"],
+        "94520": ["Irvington Memorial"],
+        "94521": ["Irvington Memorial"],
+        "94523": ["Irvington Memorial"],
+        "94525": ["Irvington Memorial"],
+        "94526": ["Irvington Memorial"],
+        "94528": ["Irvington Memorial"],
+        "94530": ["Irvington Memorial"],
+        "94531": ["Irvington Memorial"],
+        "94547": ["Irvington Memorial"],
+        "94548": ["Irvington Memorial"],
+        "94549": ["Irvington Memorial"],
+        "94551": ["Irvington Memorial"],
+        "94553": ["Irvington Memorial"],
+        "94556": ["Irvington Memorial"],
+        "94561": ["Irvington Memorial"],
+        "94563": ["Irvington Memorial"],
+        "94564": ["Irvington Memorial"],
+        "94565": ["Irvington Memorial"],
+        "94569": ["Irvington Memorial"],
+        "94572": ["Irvington Memorial"],
+        "94575": ["Irvington Memorial"],
+        "94582": ["Irvington Memorial"],
+        "94583": ["Irvington Memorial"],
+        "94595": ["Irvington Memorial"],
+        "94596": ["Irvington Memorial"],
+        "94597": ["Irvington Memorial"],
+        "94598": ["Irvington Memorial"],
+        "94801": ["Irvington Memorial"],
+        "94803": ["Irvington Memorial"],
+        "94804": ["Irvington Memorial"],
+        "94805": ["Irvington Memorial"],
+        "94806": ["Irvington Memorial"],
+        "94850": ["Irvington Memorial"],
+        "95202": ["Irvington Memorial"],
+        "95203": ["Irvington Memorial"],
+        "95204": ["Irvington Memorial"],
+        "95205": ["Irvington Memorial"],
+        "95206": ["Irvington Memorial"],
+        "95207": ["Irvington Memorial"],
+        "95209": ["Irvington Memorial"],
+        "95210": ["Irvington Memorial"],
+        "95211": ["Irvington Memorial"],
+        "95212": ["Irvington Memorial"],
+        "95215": ["Irvington Memorial"],
+        "95219": ["Irvington Memorial"],
+        "95220": ["Irvington Memorial"],
+        "95227": ["Irvington Memorial"],
+        "95230": ["Irvington Memorial"],
+        "95231": ["Irvington Memorial"],
+        "95234": ["Irvington Memorial"],
+        "95236": ["Irvington Memorial"],
+        "95237": ["Irvington Memorial"],
+        "95240": ["Irvington Memorial"],
+        "95242": ["Irvington Memorial"],
+        "95258": ["Irvington Memorial"],
+        "95304": ["Irvington Memorial"],
+        "95320": ["Irvington Memorial"],
+        "95330": ["Irvington Memorial"],
+        "95336": ["Irvington Memorial"],
+        "95337": ["Irvington Memorial"],
+        "95366": ["Irvington Memorial"],
+        "95376": ["Irvington Memorial"],
+        "95377": ["Irvington Memorial"],
+        "95686": ["Irvington Memorial"],
+        "95307": ["Irvington Memorial"],
+        "95313": ["Irvington Memorial"],
+        "95316": ["Irvington Memorial"],
+        "95319": ["Irvington Memorial"],
+        "95323": ["Irvington Memorial"],
+        "95326": ["Irvington Memorial"],
+        "95328": ["Irvington Memorial"],
+        "95350": ["Irvington Memorial"],
+        "95351": ["Irvington Memorial"],
+        "95354": ["Irvington Memorial"],
+        "95355": ["Irvington Memorial"],
+        "95356": ["Irvington Memorial"],
+        "95357": ["Irvington Memorial"],
+        "95358": ["Irvington Memorial"],
+        "95360": ["Irvington Memorial"],
+        "95361": ["Irvington Memorial"],
+        "95363": ["Irvington Memorial"],
+        "95367": ["Irvington Memorial"],
+        "95368": ["Irvington Memorial"],
+        "95380": ["Irvington Memorial"],
+        "95382": ["Irvington Memorial"],
+        "95385": ["Irvington Memorial"],
+        "95386": ["Irvington Memorial"],
+        "95387": ["Irvington Memorial"]
+    },
     // Portland metro: Multnomah County (OR) + Clark County (WA)
     "Portland": {
         "97019": ["Portland Cremation Center"],
@@ -2637,7 +2797,8 @@ const CREMATORY_ZIP_CODES = [
     "85007",  // Phoenix - Phoenix, AZ
     "85716",  // Tucson - Tucson, AZ
     "98032",  // Seattle - Kent, WA
-    "97230"   // Portland Cremation Center - Portland, OR
+    "97230",  // Portland Cremation Center - Portland, OR
+    "94538"   // Irvington Memorial - Fremont, CA
 ];
 
 /**
@@ -2668,6 +2829,10 @@ function loadEmbeddedData() {
     });
 
     // Load FPG/Monarch partner crematories (red markers)
+    if (typeof TRANSPORT_LOCATIONS !== 'undefined') {
+        TRANSPORT_LOCATIONS.forEach(loc => addTransportMarker(loc));
+    }
+
     if (typeof FPG_CREMATORY_LOCATIONS !== 'undefined') {
         FPG_CREMATORY_LOCATIONS.forEach(crem => {
             addFPGCrematoryMarker(crem);

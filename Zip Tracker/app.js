@@ -2473,6 +2473,42 @@ function addFPGCrematoryMarker(crem) {
     state.crematoryMarkers.push(marker);
 }
 
+function addTransportMarker(loc) {
+    if (!loc.lat || !loc.lng) return;
+
+    const icon = L.divIcon({
+        className: 'transport-marker-icon',
+        html: `<div style="
+            background: #1E88E5;
+            border: 3px solid #0D47A1;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        "><i class="fas fa-truck" style="font-size: 9px; color: #fff;"></i></div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+    });
+
+    const marker = L.marker([loc.lat, loc.lng], { icon })
+        .addTo(state.map)
+        .bindPopup(`
+            <div class="popup-header" style="color: #1E88E5;">${loc.name}</div>
+            <div class="popup-row">
+                <span class="popup-label">Type:</span>
+                <span class="popup-value">Transport and storage</span>
+            </div>
+            <div class="popup-row">
+                <span class="popup-label">Location:</span>
+                <span class="popup-value">${loc.address}</span>
+            </div>
+        `);
+
+    state.crematoryMarkers.push(marker);
+}
+
 async function calculateDistances() {
     console.log('Calculating distances for all service area zips...');
 
